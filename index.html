@@ -1,0 +1,1836 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Amadeus Selling Platform Connect — Singapore Airlines (sandbox · demo)</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23006fb9'/><text x='16' y='22' font-family='Helvetica' font-weight='700' font-size='16' text-anchor='middle' fill='%23ffffff'>a</text></svg>"
+    />
+    <style>
+      :root {
+        --ama-blue: #006fb9;
+        --ama-blue-dark: #004f87;
+        --ama-blue-light: #e7f1fb;
+        --ama-bar-bg: #f4f6f8;
+        --ama-row-hover: #e9eff5;
+        --ama-pink: #d51067;
+        --ama-divider: #cfd6dd;
+        --ama-ink: #1c2733;
+        --ama-muted: #5f6c79;
+        --cx-jade: #006564;
+        --cx-gold: #c9a96a;
+        --term-bg: #fffef2;
+        --term-ink: #1f1d12;
+        --term-meta: #5a6b88;
+        --term-warn: #b44514;
+        --term-ok: #006a36;
+        --term-accent: #b8480d;
+        --term-cancel: #c01818;
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        background: #e3e9ee;
+        color: var(--ama-ink);
+        height: 100%;
+        font-size: 13px;
+      }
+      .hidden { display: none !important; }
+
+      /* ===================== LOGIN =====================
+         Layout tuned for a 2/3-width screen capture taken from the left
+         edge: the login card sits at ~1/3 viewport (centered in a 0-66vw
+         crop) and the "amadeus / Singapore Airlines" lock-up is pulled inwards
+         so it falls inside that same crop. */
+      .ama-login-view {
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: 3fr 1fr;
+        align-items: center;
+        position: relative;
+        background: #ffffff;
+        overflow: hidden;
+      }
+      .ama-login-view .ama-login-card { justify-self: center; }
+      .ama-login-bg { position: absolute; left: 0; bottom: 0; width: 38%; pointer-events: none; opacity: 0.85; }
+      @media (max-width: 800px) {
+        .ama-login-view { grid-template-columns: 1fr; }
+      }
+      .ama-login-card {
+        width: 440px; background: #ffffff; border-radius: 6px;
+        padding: 28px 32px 28px; box-shadow: 0 2px 14px rgba(0, 80, 130, 0.08);
+        border: 1px solid #d9e2ea; z-index: 1;
+      }
+      .ama-login-brand { text-align: center; margin-bottom: 22px; }
+      .ama-login-brand .ama-title {
+        font-family: Georgia, "Times New Roman", serif; font-weight: 700;
+        font-size: 26px; color: var(--ama-blue-dark);
+      }
+      .ama-login-brand .ama-sub { color: var(--ama-blue); font-weight: 500; font-size: 18px; margin-top: 2px; }
+      .ama-login-card h2 {
+        font-size: 13px; font-weight: 600; text-align: center; margin: 0 0 18px; color: var(--ama-ink);
+      }
+      .office-row {
+        display: grid; grid-template-columns: 110px 1fr; align-items: center;
+        gap: 10px; margin-bottom: 10px; font-size: 12px;
+      }
+      .office-row label { color: var(--ama-ink); }
+      .office-row .required-star { color: var(--ama-pink); margin-right: 3px; font-weight: 700; }
+      .office-row input, .office-row select {
+        width: 100%; padding: 5px 8px; border: 1px solid #b9c4d0; border-radius: 3px;
+        font-family: inherit; font-size: 12px; background: #ffffff;
+      }
+      .office-row input:focus, .office-row select:focus {
+        outline: none; border-color: var(--ama-blue); box-shadow: 0 0 0 2px rgba(0, 111, 185, 0.15);
+      }
+      .office-row-remember { grid-template-columns: 1fr; text-align: center; margin: 14px 0 12px; }
+      .remember-box { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--ama-muted); }
+      .office-row-actions { grid-template-columns: 1fr 1fr; margin-top: 6px; gap: 12px; justify-items: end; }
+      .office-row-actions .office-action { min-width: 92px; }
+      .office-action {
+        padding: 7px 14px; background: var(--ama-pink); color: #fff; border: none;
+        border-radius: 999px; font-weight: 600; font-size: 12px; letter-spacing: 0.3px;
+        cursor: pointer; transition: background 0.15s ease;
+      }
+      .office-action:hover { background: #b40e58; }
+      .office-action-secondary {
+        background: #ffffff; color: var(--ama-pink); border: 1px solid var(--ama-pink);
+      }
+      .office-action-secondary:hover { background: #fde8f1; }
+      .ama-login-footer {
+        position: absolute; left: 0; right: 0; bottom: 0;
+        background: var(--ama-blue-dark); color: #fff; font-size: 11px;
+        padding: 6px 14px; text-align: left; z-index: 1;
+      }
+      .ama-login-logo-right {
+        position: absolute;
+        /* Pulled inwards so it lands inside a left-aligned 2/3-width crop. */
+        right: 36vw; bottom: 28px;
+        font-family: Georgia, "Times New Roman", serif; color: var(--ama-blue-dark);
+        font-size: 28px; font-weight: 700; opacity: 0.85; z-index: 1;
+        text-align: right;
+      }
+      .ama-login-logo-right small {
+        font-weight: 400; font-size: 14px; color: var(--ama-blue); display: block;
+      }
+      @media (max-width: 800px) {
+        .ama-login-logo-right { right: 24px; }
+      }
+
+      /* ===================== WORKSPACE ===================== */
+      .ama-workspace { display: flex; flex-direction: column; height: 100vh; background: #ffffff; }
+      .ama-header { background: #ffffff; border-bottom: 1px solid var(--ama-divider); }
+      .ama-menu-row { display: flex; align-items: center; gap: 16px; padding: 6px 14px 4px; }
+      .ama-brand { font-family: Georgia, "Times New Roman", serif; color: var(--ama-blue-dark); font-weight: 700; font-size: 18px; }
+      .ama-brand span.accent { color: var(--ama-blue); }
+      .ama-menu { display: flex; align-items: center; gap: 4px; font-size: 12px; }
+      .ama-menu .item { padding: 4px 10px; color: var(--ama-ink); cursor: default; border-radius: 3px; }
+      .ama-menu .item:hover { background: var(--ama-row-hover); }
+      .ama-env {
+        margin-left: auto; font-size: 11px; color: #fff; background: var(--ama-pink);
+        padding: 3px 9px; border-radius: 3px; font-weight: 600; letter-spacing: 0.6px;
+      }
+      .ama-toolbar-row {
+        display: flex; align-items: center; gap: 10px; padding: 6px 14px;
+        background: var(--ama-bar-bg); border-top: 1px solid var(--ama-divider);
+        font-size: 12px; flex-wrap: wrap;
+      }
+      .ama-toolbar-row .label { color: var(--ama-muted); margin-right: 2px; }
+      .ama-toolbar-row .link {
+        color: var(--ama-blue); text-decoration: underline; cursor: pointer; text-underline-offset: 2px;
+      }
+      .ama-toolbar-row .link:hover { color: var(--ama-blue-dark); }
+      .ama-toolbar-row .pipe { color: #b8c2cc; }
+      .ama-retrieve-input { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+      .ama-retrieve-input input {
+        padding: 4px 8px; font-size: 12px; border: 1px solid #b9c4d0; border-radius: 3px; width: 130px;
+      }
+      .retrieve-btn {
+        background: var(--ama-pink); border: none; color: #fff;
+        padding: 4px 14px; border-radius: 3px; font-size: 12px; font-weight: 600; cursor: pointer;
+      }
+      .ama-session-meta { font-size: 11px; color: var(--ama-muted); margin-right: 8px; }
+      .ama-session-meta b { color: var(--ama-ink); }
+
+      .ama-pnr-tabs {
+        display: flex; align-items: center; padding: 0 14px;
+        background: var(--ama-bar-bg); border-top: 1px solid var(--ama-divider);
+        border-bottom: 1px solid var(--ama-divider); font-size: 12px;
+      }
+      .ama-pnr-tabs .tab {
+        padding: 7px 14px; border-right: 1px solid var(--ama-divider);
+        color: var(--ama-muted); cursor: default;
+      }
+      .ama-pnr-tabs .tab.active {
+        background: #ffffff; color: var(--ama-ink); font-weight: 600;
+        border-bottom: 2px solid var(--ama-blue); margin-bottom: -1px;
+      }
+      .ama-pnr-tabs .tab.section {
+        background: var(--ama-blue); color: #fff; font-weight: 700; border-right: 1px solid var(--ama-blue-dark);
+      }
+      .ama-pnr-tabs .end-transaction {
+        margin-left: auto; color: var(--ama-blue); padding: 7px 14px; cursor: pointer; text-decoration: underline;
+      }
+
+      .ama-body {
+        display: grid; grid-template-columns: 250px 1fr 240px;
+        flex: 1; min-height: 0; background: #ffffff;
+      }
+
+      /* Left toolbar tree */
+      .ama-side { background: #fbfcfd; border-right: 1px solid var(--ama-divider); overflow-y: auto; font-size: 12px; }
+      .ama-side-group { border-bottom: 1px solid #eef1f4; }
+      .ama-side-header {
+        display: flex; align-items: center; gap: 6px; padding: 8px 12px;
+        cursor: pointer; user-select: none; font-weight: 600;
+        color: var(--ama-ink); background: #f4f7fa;
+      }
+      .ama-side-header:hover { background: #ebeff4; }
+      .ama-side-header .chev { font-size: 10px; width: 10px; color: var(--ama-muted); transition: transform 0.15s; }
+      .ama-side-group.open .ama-side-header .chev { transform: rotate(90deg); }
+      .ama-side-items { display: none; padding: 4px 0 6px; }
+      .ama-side-group.open .ama-side-items { display: block; }
+      .ama-side-items .row {
+        padding: 4px 12px 4px 28px; color: var(--ama-blue); cursor: pointer;
+        display: flex; align-items: center; gap: 6px;
+      }
+      .ama-side-items .row:hover { background: var(--ama-row-hover); color: var(--ama-blue-dark); }
+      .ama-side-items .row .digit {
+        width: 18px; height: 18px; border-radius: 50%;
+        background: var(--ama-pink); color: #fff; font-weight: 700;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-size: 10px; flex-shrink: 0;
+      }
+      .ama-side-items .row .digit-blank {
+        width: 18px; height: 18px; color: var(--ama-muted); display: inline-flex;
+        align-items: center; justify-content: center; font-size: 11px;
+      }
+
+      .ama-main { display: flex; flex-direction: column; min-width: 0; background: #ffffff; }
+      .ama-cryptic-bar {
+        display: flex; align-items: center; gap: 8px; padding: 6px 12px;
+        background: var(--ama-blue-dark); color: #fff; font-size: 12px; font-weight: 600;
+      }
+      .ama-cryptic-bar .left { display: flex; gap: 12px; align-items: center; }
+      .ama-cryptic-bar .right {
+        margin-left: auto; display: flex; gap: 8px; font-size: 11px; opacity: 0.85; font-weight: 400;
+      }
+      .ama-cryptic-bar .right span { padding: 0 6px; border-left: 1px solid rgba(255,255,255,0.2); }
+      .ama-cryptic-bar .right span:first-child { border-left: none; }
+      .reset-btn {
+        margin-left: 12px; background: var(--ama-pink); color: #fff; border: none;
+        padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 700;
+        letter-spacing: 0.4px; cursor: pointer;
+      }
+      .reset-btn:hover { background: #b40e58; }
+      .ama-side-items .row .letter {
+        width: 18px; height: 18px; border-radius: 50%;
+        background: #2a8050; color: #fff; font-weight: 700;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-size: 10px; flex-shrink: 0;
+      }
+      .ama-side-items .row .step-label {
+        color: var(--ama-muted); font-size: 10px; margin-left: 2px;
+      }
+
+      .ama-cryptic-pane {
+        flex: 1; background: var(--term-bg); margin: 6px 8px 4px;
+        border: 1px solid #d6d0b1; box-shadow: inset 0 0 0 1px #efe9c8;
+        overflow: hidden; display: flex; flex-direction: column; min-height: 0;
+      }
+      .ama-cryptic-meta {
+        background: #f4eecf; border-bottom: 1px solid #d6d0b1; padding: 5px 12px;
+        font-family: "Consolas", "Menlo", monospace; font-size: 11px;
+        color: #6b6235; letter-spacing: 0.6px; text-transform: uppercase;
+      }
+      .ama-cryptic-meta b { color: #3d3611; }
+      .single-cryptic-screen {
+        flex: 1; margin: 0; padding: 10px 14px 14px;
+        font-family: "Consolas", "Menlo", "Courier New", monospace;
+        font-size: 13px; color: var(--term-ink); white-space: pre; overflow: auto;
+        line-height: 1.4; background: var(--term-bg);
+      }
+      .cryptic-line.plain    { color: var(--term-ink); }
+      .cryptic-line.meta     { color: var(--term-meta); font-weight: 600; }
+      .cryptic-line.passenger{ color: #0a3a72; font-weight: 600; }
+      .cryptic-line.segment  { color: #064e93; }
+      .cryptic-line.cancelled{ color: var(--term-cancel); font-weight: 600; }
+      .cryptic-line.newseg   { color: var(--term-ok); font-weight: 600; }
+      .cryptic-line.ssr      { color: #5e3b85; }
+      .cryptic-line.total    { color: var(--term-accent); font-weight: 700; }
+      .cryptic-line.warn     { color: var(--term-warn); font-weight: 600; }
+      .cryptic-line.ok       { color: var(--term-ok); font-weight: 600; }
+      .cryptic-line.divider  { color: #b8a96a; letter-spacing: 1.5px; }
+      .cryptic-line.comment  { color: var(--ama-muted); font-style: italic; }
+      /* Lines that represent something materially changed by the agent.
+         Pale-amber band with a left rule so they pop in the cryptic pane. */
+      .cryptic-line.highlight {
+        background: #fff5c2; color: #6a4a0a; font-weight: 700;
+        border-left: 3px solid var(--ama-pink); padding-left: 6px; margin-left: -6px;
+      }
+      .cryptic-line.newseg { background: #e8f7ec; padding-left: 6px; margin-left: -6px; }
+      .cryptic-line.cancelled { background: #fbeaea; padding-left: 6px; margin-left: -6px; }
+
+      .ama-cmdline {
+        background: #1c2733; border-top: 1px solid #0d141c;
+        padding: 8px 12px; display: flex; align-items: center; gap: 10px;
+        margin: 0 8px 6px; border-radius: 0 0 3px 3px;
+      }
+      .ama-cmdline .prompt { color: #f5d77a; font-family: "Consolas", "Menlo", monospace; font-size: 14px; }
+      .ama-cmdline form { flex: 1; }
+      .ama-cmdline input {
+        width: 100%; background: transparent; border: none; color: #e6f0ff;
+        font-family: "Consolas", "Menlo", monospace; font-size: 13px; outline: none; letter-spacing: 0.6px;
+      }
+      .ama-cmdline input::placeholder { color: #6b7888; }
+
+      /* Right panel */
+      .ama-right { background: #fbfcfd; border-left: 1px solid var(--ama-divider); overflow-y: auto; font-size: 12px; }
+      .ama-right-block { padding: 10px 12px; border-bottom: 1px solid #eef1f4; }
+      .ama-right-block h4 {
+        font-size: 12px; margin: 0 0 6px; color: var(--ama-ink);
+        display: flex; align-items: center; gap: 6px;
+      }
+      .ama-right-block h4 .pill {
+        background: #e7f1fb; color: var(--ama-blue); font-weight: 500;
+        font-size: 10px; padding: 1px 6px; border-radius: 999px;
+      }
+      .ama-right-block .empty { color: var(--ama-muted); font-style: italic; }
+      .ama-right-block .seg {
+        display: grid; grid-template-columns: 60px 1fr; gap: 4px;
+        padding: 4px 0; border-top: 1px dashed #e4e8ed; font-size: 11px;
+      }
+      .ama-right-block .seg:first-of-type { border-top: none; }
+      .ama-right-block .seg .flt { font-weight: 600; color: var(--ama-blue-dark); }
+      .ama-right-block .seg.cancelled .flt,
+      .ama-right-block .seg.cancelled .route,
+      .ama-right-block .seg.cancelled .when { color: var(--term-cancel); text-decoration: line-through; }
+      .ama-right-block .seg.cancelled .badge {
+        display: inline-block; background: var(--term-cancel); color: #fff;
+        font-size: 9px; padding: 1px 5px; border-radius: 3px; margin-left: 4px;
+        text-decoration: none; vertical-align: middle;
+      }
+      .ama-right-block .seg.added .flt { color: var(--term-ok); }
+      .ama-right-block .seg.added .badge {
+        display: inline-block; background: var(--term-ok); color: #fff;
+        font-size: 9px; padding: 1px 5px; border-radius: 3px; margin-left: 4px;
+      }
+      .ama-right-block .seg .route { color: var(--ama-ink); }
+      .ama-right-block .seg .when { color: var(--ama-muted); font-size: 10px; }
+
+      .ama-tab-strip {
+        display: flex; align-items: center; background: var(--ama-bar-bg);
+        border-top: 1px solid var(--ama-divider); padding: 0; font-size: 12px; height: 30px;
+      }
+      .ama-tab-strip .ttab {
+        padding: 5px 14px; border-right: 1px solid var(--ama-divider); cursor: default;
+        height: 100%; display: inline-flex; align-items: center; color: var(--ama-muted);
+      }
+      .ama-tab-strip .ttab.active {
+        background: #fff; color: var(--ama-ink); font-weight: 600; border-top: 2px solid var(--ama-blue);
+      }
+      .ama-tab-strip .ttab .x { margin-left: 8px; color: #b8c2cc; font-size: 11px; }
+      .ama-tab-strip .close-all {
+        margin-left: auto; color: var(--ama-blue); font-size: 11px;
+        padding-right: 14px; cursor: pointer; text-decoration: underline;
+      }
+      @media (max-width: 1100px) { .ama-body { grid-template-columns: 220px 1fr; } .ama-right { display: none; } }
+      @media (max-width: 800px)  { .ama-body { grid-template-columns: 1fr; } .ama-side { display: none; } }
+    </style>
+  </head>
+  <body>
+    <!-- ===================== LOGIN ===================== -->
+    <div id="amaLoginView" class="ama-login-view">
+      <svg class="ama-login-bg" viewBox="0 0 600 360" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="gw" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#e5d2b6" />
+            <stop offset="100%" stop-color="#cdb88f" />
+          </linearGradient>
+        </defs>
+        <path d="M0,360 L0,140 C90,60 200,160 320,110 C460,55 540,200 600,170 L600,360 Z" fill="url(#gw)" />
+        <g stroke="#5a4f3b" stroke-width="1.4" fill="none" opacity="0.55">
+          <path d="M50,300 Q150,260 250,290" />
+          <path d="M120,330 Q220,300 300,320" />
+          <path d="M80,250 Q200,200 340,240" />
+        </g>
+        <g transform="translate(150,190)" opacity="0.85">
+          <line x1="0" y1="0" x2="120" y2="80" stroke="#7a3a3a" stroke-width="3" />
+          <line x1="0" y1="0" x2="120" y2="100" stroke="#2a4880" stroke-width="3" />
+          <circle cx="0" cy="0" r="6" fill="#3a4a5a" />
+        </g>
+      </svg>
+
+      <div class="ama-login-card">
+        <div class="ama-login-brand">
+          <div class="ama-title">Amadeus</div>
+          <div class="ama-sub">Office Management</div>
+        </div>
+        <form id="loginForm">
+          <h2>Please enter your details to log in</h2>
+
+          <div class="office-row">
+            <label for="loginMode">Mode:</label>
+            <select id="loginMode">
+              <option selected>Sign + Location</option>
+              <option>Sign only</option>
+            </select>
+          </div>
+          <div class="office-row">
+            <label for="loginUsername"><span class="required-star">*</span> Agent Sign:</label>
+            <input id="loginUsername" type="text" value="SQAGT01" autocomplete="off" />
+          </div>
+          <div class="office-row">
+            <label for="loginOfficeId"><span class="required-star">*</span> Office ID:</label>
+            <input id="loginOfficeId" type="text" value="SINSQ0100" autocomplete="off" />
+          </div>
+          <div class="office-row office-row-remember">
+            <label class="remember-box">
+              <input type="checkbox" checked />
+              <span>Remember me</span>
+            </label>
+          </div>
+          <div class="office-row office-row-actions">
+            <button id="loginSubmit" type="submit" class="office-action">Next</button>
+            <button id="loginClear" type="button" class="office-action office-action-secondary">Clear</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="ama-login-logo-right">
+        amadeus
+        <small>Singapore Airlines — sandbox · demo</small>
+      </div>
+      <div class="ama-login-footer">© Amadeus Copyright 1999-2026 — Selling Platform Connect</div>
+    </div>
+
+    <!-- ===================== WORKSPACE ===================== -->
+    <div id="amaWorkspace" class="ama-workspace hidden">
+      <div class="ama-header">
+        <div class="ama-menu-row">
+          <div class="ama-brand">ama<span class="accent">DEUS</span></div>
+          <nav class="ama-menu">
+            <div class="item">File</div>
+            <div class="item">Calculate &amp; Convert</div>
+            <div class="item">Search</div>
+            <div class="item">Tools</div>
+            <div class="item">Help</div>
+          </nav>
+          <span class="ama-env">TEST (PDT)</span>
+          <button id="resetDemoBtn" class="reset-btn" title="Reset the demo to the cancelled-segment starting state">↺ Reset demo</button>
+        </div>
+
+        <div class="ama-toolbar-row">
+          <span class="label">Create New:</span>
+          <span class="link">Session</span>
+          <span class="pipe">|</span>
+          <span class="link">Create New: PNR</span>
+          <span class="pipe">|</span>
+          <span class="link">Group PNR</span>
+          <span class="pipe">|</span>
+          <span class="label">Search:</span>
+          <span class="link">PNR</span>
+          <span class="pipe">|</span>
+          <span class="link">Member</span>
+
+          <div class="ama-retrieve-input">
+            <span class="ama-session-meta">
+              <b id="terminalSessionLabel">Session not opened</b>
+            </span>
+            <input id="retrieveInput" type="text" placeholder="Record locator" />
+            <button id="retrieveBtn" class="retrieve-btn">Retrieve</button>
+          </div>
+        </div>
+
+        <div class="ama-pnr-tabs">
+          <div class="tab section">NEW PNR 1</div>
+          <div class="tab active">FLIGHT SEARCH</div>
+          <div class="tab">PRICING</div>
+          <div class="tab">TST</div>
+          <div class="tab">E-TICKET</div>
+          <div class="tab">TSM</div>
+          <div class="tab">EMD</div>
+          <div class="tab">MORE ▾</div>
+          <div class="end-transaction" id="endTransactionBtn">End of Transaction</div>
+        </div>
+      </div>
+
+      <div class="ama-body">
+        <aside class="ama-side" id="amaSide"></aside>
+
+        <main class="ama-main">
+          <div class="ama-cryptic-bar">
+            <div class="left"><span>Cryptic Window</span></div>
+            <div class="right">
+              <span id="authStatus">Authentication Required</span>
+              <span id="officeIdLabel">OFFICE —</span>
+              <span id="terminalDateLabel">--</span>
+            </div>
+          </div>
+
+          <div class="ama-cryptic-pane">
+            <div class="ama-cryptic-meta">
+              <b>›</b> <span id="activeCommandLabel">ready</span>
+            </div>
+            <pre id="singleCrypticScreen" class="single-cryptic-screen"></pre>
+          </div>
+
+          <div class="ama-cmdline">
+            <span class="prompt">›</span>
+            <form id="terminalForm">
+              <input id="terminalInput" type="text" autocomplete="off"
+                placeholder="enter cryptic command (or press 1-9 for reissue flow)" />
+            </form>
+          </div>
+        </main>
+
+        <aside class="ama-right">
+          <div class="ama-right-block">
+            <h4>Itinerary Details <span class="pill" id="itinPnrPill">No PNR</span></h4>
+            <div id="itinDetails" class="empty">Retrieve a PNR to populate this panel.</div>
+          </div>
+          <div class="ama-right-block">
+            <h4>Passengers</h4>
+            <div id="itinPax" class="empty">—</div>
+          </div>
+          <div class="ama-right-block">
+            <h4>Itinerary</h4>
+            <div id="itinSegs" class="empty">—</div>
+          </div>
+        </aside>
+      </div>
+
+      <div class="ama-tab-strip">
+        <div class="ttab active">Home</div>
+        <div class="ttab">New PNR 1<span class="x">×</span></div>
+        <div class="close-all">Close All Tabs</div>
+      </div>
+    </div>
+
+    <script>
+      // =====================================================================
+      // FIXTURE — Singapore Airlines disruption / involuntary reissue (synthetic demo data)
+      //   Original: SQ 231 SIN 21:40 → SYD 08:10+1, 20OCT          [CANCELLED — technical]
+      //   Auto re-protection: SQ 221 SIN 08:15 → SYD 18:45, 21OCT   [lands after the wedding]
+      //   New:      SQ 237 SIN 23:55 → MEL 09:55+1 (Premium Economy W, 31D-F)
+      //             VA 822 MEL 11:45 → SYD 13:20 (Virgin Australia, Economy Y)
+      //   Involuntary reissue keeps the record locator K7Q2ZP.
+      // =====================================================================
+      const PNR_REF = "K7Q2ZP";              // record locator (kept on involuntary reissue)
+      let currentPnr = PNR_REF;
+      const OLD_TICKETS = ["618-2400712001", "618-2400712002", "618-2400712003"];
+      const NEW_TICKETS = ["618-2400731581", "618-2400731582", "618-2400731583"];
+      const OFFICE_ID_DEFAULT = "SINSQ0100";
+      const AGENT_DEFAULT = "SQAGT01";
+      const DEMO_DAY = "20OCT26";
+
+      const PAX1 = {
+        n: 1, line: "1.LIM/MAYA MRS",
+        nameLast: "LIM", nameFirst: "MAYA", title: "MRS", ptc: "ADT",
+        ff: "8801245730", tier: "ELITE GOLD",
+        dob: "11FEB89", gender: "F", docNo: "K0000001A",
+        seat: "31D", meal: null,
+      };
+      const PAX2 = {
+        n: 2, line: "2.LIM/ETHAN MSTR(CHD/14MAR20)",
+        nameLast: "LIM", nameFirst: "ETHAN", title: "MSTR", ptc: "CHD",
+        ff: null, tier: null,
+        dob: "14MAR20", gender: "M", docNo: "K0000002B",
+        seat: "31E", meal: "CHML",
+      };
+      const PAX3 = {
+        n: 3, line: "3.LIM/CHLOE MISS(CHD/02JUN17)",
+        nameLast: "LIM", nameFirst: "CHLOE", title: "MISS", ptc: "CHD",
+        ff: null, tier: null,
+        dob: "02JUN17", gender: "F", docNo: "K0000003C",
+        seat: "31F", meal: null,
+      };
+      const PAX_LIST = [PAX1, PAX2, PAX3];
+      function paxByNum(n) { return PAX_LIST.find((p) => p.n === Number(n)) || PAX1; }
+      const PAX_PHONE = "AP SIN +65-6555-0142-M";
+      const PAX_EMAIL = "AP MAYA.LIM//EXAMPLE.COM-E";
+
+      // Original itinerary: cancelled flight plus the automatic re-protection
+      const ORIGINAL_SEGMENTS = [
+        { n: 1, flt: "SQ 231", cls: "Y", date: "20OCT", dow: "2",
+          from: "SIN", to: "SYD", status: "HX3",
+          dep: "2140", arr: "0810+1", dur: "7H 30M",
+          op: "SINGAPORE AIRLINES", equip: "A350-900",
+          fareBasis: "YSG3M", kind: "cancelled",
+          cancelReason: "CANCELLED BY SQ — AIRCRAFT TECHNICAL" },
+        { n: 2, flt: "SQ 221", cls: "Y", date: "21OCT", dow: "3",
+          from: "SIN", to: "SYD", status: "HK3",
+          dep: "0815", arr: "1845", dur: "7H 30M",
+          op: "SINGAPORE AIRLINES", equip: "B777-300ER",
+          fareBasis: "YSG3M", kind: "reprotected" },
+      ];
+
+      const LAYOVER_MEL = "1H 50M AT MEL (MCT INTL-DOM 1H 30M) — VA BOARDING PASSES AT THE MEL TRANSFER DESK";
+      const SEG_SEATS = { "SQ 237": "31D 31E 31F", "VA 822": "22A 22B 22C" };
+
+      // =====================================================================
+      // State
+      // =====================================================================
+      let crypticSessionId = null;
+      let authenticated = false;
+      let pnrLoaded = false;
+      let pnrSaved = true;
+      let segments = JSON.parse(JSON.stringify(ORIGINAL_SEGMENTS));
+      let lastAvailability = null;
+      let tstCreated = false;
+      let totalAddColl = null;
+      let ticketReissued = false;
+      let oldSegmentsRemoved = false;
+
+      // =====================================================================
+      // DOM refs
+      // =====================================================================
+      const loginView = document.getElementById("amaLoginView");
+      const workspace = document.getElementById("amaWorkspace");
+      const loginForm = document.getElementById("loginForm");
+      const loginClear = document.getElementById("loginClear");
+      const terminalForm = document.getElementById("terminalForm");
+      const terminalInput = document.getElementById("terminalInput");
+      const terminalSessionLabel = document.getElementById("terminalSessionLabel");
+      const terminalDateLabel = document.getElementById("terminalDateLabel");
+      const officeIdLabel = document.getElementById("officeIdLabel");
+      const authStatus = document.getElementById("authStatus");
+      const singleCrypticScreen = document.getElementById("singleCrypticScreen");
+      const activeCommandLabel = document.getElementById("activeCommandLabel");
+      const retrieveBtn = document.getElementById("retrieveBtn");
+      const retrieveInput = document.getElementById("retrieveInput");
+      const endTransactionBtn = document.getElementById("endTransactionBtn");
+      const itinPnrPill = document.getElementById("itinPnrPill");
+      const itinDetails = document.getElementById("itinDetails");
+      const itinPax = document.getElementById("itinPax");
+      const itinSegs = document.getElementById("itinSegs");
+      const amaSide = document.getElementById("amaSide");
+
+      // =====================================================================
+      // Reissue flow shortcuts (Kris reissue playbook).
+      // Digits 1-9 are the MANDATORY sequence; letters are optional
+      // diagnostic / verification steps.
+      //
+      //   1  RT K7Q2ZP               Open PNR (SQ231 cancelled HX3, SQ221 re-protection)
+      //   a  RTTN                    Show ticket numbers attached
+      //   b  RHA                     Show PNR history (cancellation, re-protection, approval)
+      //   2  RTG                     Services / SSRs to keep (CHML for Ethan)
+      //   3  AN20OCTSINMEL/ASQ       SIN-MEL availability on SQ tonight
+      //   4  SS3W1                   Sell 3 seats in W on line 1 (SQ 237, seats 31D-F)
+      //   5  AN21OCTMELSYD/AVA       MEL-SYD availability on VA
+      //   6  SS3Y1                   Sell 3 seats in Y on line 1 (VA 822)
+      //   c  SM3                     Seat map SQ 237 (family seated together)
+      //   7  FXQ/S3,4/P1-3           Reprice the new segments with the disruption waiver
+      //   d  TWD                     Display stored TST
+      //   8  TTP/RT                  Reissue the three 618 tickets
+      //   e  TTI                     Itinerary receipt
+      //   9  RF KRIS;ER              Save with audit trail (drops SQ231 and SQ221)
+      //   k  RT K7Q2ZP               Refresh PNR — see the final state
+      // =====================================================================
+      const NUM_SHORTCUTS = new Map([
+        ["1", "RT " + PNR_REF],
+        ["2", "RTG"],
+        ["3", "AN20OCTSINMEL/ASQ"],
+        ["4", "SS3W1"],
+        ["5", "AN21OCTMELSYD/AVA"],
+        ["6", "SS3Y1"],
+        ["7", "FXQ/S3,4/P1-3"],
+        ["8", "TTP/RT"],
+        ["9", "RF KRIS;ER"],
+      ]);
+      const LETTER_SHORTCUTS = new Map([
+        ["a", "RTTN"],
+        ["b", "RHA"],
+        ["c", "SM3"],
+        ["d", "TWD"],
+        ["e", "TTI"],
+        ["k", "RT " + PNR_REF],
+      ]);
+
+      // =====================================================================
+      // Left toolbar tree — Reissue Flow on top, then the usual toolbar
+      // =====================================================================
+      const TOOLBAR_GROUPS = [
+        {
+          title: "Reissue Flow — press in order",
+          rows: [
+            { digit: "1", label: "Retrieve PNR (RT K7Q2ZP)",             cmd: "RT " + PNR_REF, step: "open" },
+            { letter: "a", label: "Show ticket numbers (RTTN)",          cmd: "RTTN",          step: "info" },
+            { letter: "b", label: "Show PNR history (RHA)",              cmd: "RHA",           step: "info" },
+            { digit: "2", label: "Services to preserve (RTG)",           cmd: "RTG",           step: "audit" },
+            { digit: "3", label: "Avail SIN-MEL on SQ",                  cmd: "AN20OCTSINMEL/ASQ", step: "search" },
+            { digit: "4", label: "Sell SQ 237 Premium Economy (SS3W1)",  cmd: "SS3W1",         step: "sell" },
+            { digit: "5", label: "Avail MEL-SYD on VA",                  cmd: "AN21OCTMELSYD/AVA", step: "search" },
+            { digit: "6", label: "Sell VA 822 (SS3Y1)",                  cmd: "SS3Y1",         step: "sell" },
+            { letter: "c", label: "Seat map SQ 237 (SM3)",               cmd: "SM3",           step: "seat" },
+            { digit: "7", label: "Reprice with waiver (FXQ/S3,4/P1-3)",  cmd: "FXQ/S3,4/P1-3", step: "price" },
+            { letter: "d", label: "Display TST (TWD)",                   cmd: "TWD",           step: "info" },
+            { digit: "8", label: "Reissue tickets (TTP/RT)",             cmd: "TTP/RT",        step: "issue" },
+            { letter: "e", label: "Itinerary receipt (TTI)",             cmd: "TTI",           step: "info" },
+            { digit: "9", label: "End & save (RF KRIS;ER)",              cmd: "RF KRIS;ER",    step: "commit" },
+            { letter: "k", label: "Refresh — see final PNR (RT K7Q2ZP)", cmd: "RT " + PNR_REF, step: "verify" },
+          ],
+        },
+        {
+          title: "Retrieve / Modify",
+          rows: [
+            { label: "Retrieve PNR (RT)",                cmd: "RT " + PNR_REF },
+            { label: "Retrieve Ticket (RTTN)",           cmd: "RTTN" },
+            { label: "Retrieve Services (RTG)",          cmd: "RTG" },
+            { label: "Retrieve History (RHA)",           cmd: "RHA" },
+            { label: "Refresh PNR (IR)",                 cmd: "IR" },
+            { label: "Ignore (IG)",                      cmd: "IG" },
+            { label: "Cancel cancelled segment (XE1)",   cmd: "XE1" },
+          ],
+        },
+        {
+          title: "Queue",
+          rows: [
+            { label: "Queue list (QT)",            cmd: "QT" },
+            { label: "Queue count (QC)",           cmd: "QC" },
+            { label: "Place on queue 8 (QE/8)",    cmd: "QE/8" },
+          ],
+        },
+        {
+          title: "Settings",
+          rows: [
+            { label: "Sign-in status (JD)",  cmd: "JD" },
+            { label: "Office defaults (JM)", cmd: "JM" },
+          ],
+        },
+        {
+          title: "Calculate & Convert",
+          rows: [
+            { label: "Date calculation (DD20OCT)",     cmd: "DD20OCT" },
+            { label: "Time at airport (DI/MEL)",       cmd: "DI/MEL" },
+            { label: "Currency conv. (DC USDSGD)",     cmd: "DC USDSGD" },
+          ],
+        },
+        {
+          title: "Tools",
+          rows: [
+            { label: "Amadeus Information System (GG)", cmd: "GGAIRSQ" },
+            { label: "Sales Report (TJQ)",              cmd: "TJQ" },
+            { label: "Form of Payment Report (TJF)",    cmd: "TJF" },
+            { label: "Cryptic Window — Help",           cmd: "HE RT" },
+            { label: "Copy PNR (RRN)",                  cmd: "RRN" },
+            { label: "Flight Information (DO SQ237)",   cmd: "DO SQ237/20OCT" },
+            { label: "Flight Loading List (DL)",        cmd: "DL SQ237/20OCT" },
+          ],
+        },
+        {
+          title: "Availability & Sell",
+          rows: [
+            { label: "Avail SIN-MEL / SQ (20OCT)",       cmd: "AN20OCTSINMEL/ASQ" },
+            { label: "Avail SIN-SYD / SQ (21OCT)",       cmd: "AN21OCTSINSYD/ASQ" },
+            { label: "Avail MEL-SYD / VA (21OCT)",       cmd: "AN21OCTMELSYD/AVA" },
+            { label: "Timetable SIN-MEL (TN…)",          cmd: "TN20OCTSINMEL" },
+            { label: "Sell 3 W line 1 (SS3W1)",          cmd: "SS3W1" },
+            { label: "Rebook to W class (SBW)",          cmd: "SBW" },
+          ],
+        },
+        {
+          title: "Seats & Meals",
+          rows: [
+            { label: "Seat map SQ 237 (SM3)",                cmd: "SM3" },
+            { label: "Hold 31D for Maya (ST/31D/P1)",        cmd: "ST/31D/P1" },
+            { label: "Hold 31E for Ethan (ST/31E/P2)",       cmd: "ST/31E/P2" },
+            { label: "Hold 31F for Chloe (ST/31F/P3)",       cmd: "ST/31F/P3" },
+            { label: "Child meal Ethan (SR CHML/P2)",        cmd: "SR CHML/P2" },
+            { label: "Add DOCS SSR (all pax)",               cmd: "SR DOCS" },
+          ],
+        },
+        {
+          title: "Pricing & Ticketing",
+          rows: [
+            { label: "Display TST (TWD)",                       cmd: "TWD" },
+            { label: "Display fare family (TWD/FFY)",           cmd: "TWD/FFY" },
+            { label: "Fare quote new segs (FXQ/S3,4/P1-3)",     cmd: "FXQ/S3,4/P1-3" },
+            { label: "Best pricer keep cabin (FXO/K)",          cmd: "FXO/K" },
+            { label: "Cancel TST (FXX)",                        cmd: "FXX" },
+            { label: "Price & store (FXP)",                     cmd: "FXP" },
+            { label: "Reissue tickets (TTP/RT)",                cmd: "TTP/RT" },
+            { label: "Itinerary receipt (TTI)",                 cmd: "TTI" },
+            { label: "End & save (RF KRIS;ER)",                 cmd: "RF KRIS;ER" },
+            { label: "End & redisplay (ER)",                    cmd: "ER" },
+          ],
+        },
+        {
+          title: "Frequent Flyer",
+          rows: [
+            { label: "Display KrisFlyer Maya (FFSQ8801245730)",  cmd: "FFSQ8801245730" },
+            { label: "Attach KrisFlyer Maya (FFSQ…/P1)",         cmd: "FFSQ8801245730/P1" },
+          ],
+        },
+      ];
+
+      function renderToolbar() {
+        amaSide.innerHTML = "";
+        TOOLBAR_GROUPS.forEach((g, idx) => {
+          const groupEl = document.createElement("div");
+          groupEl.className = "ama-side-group" + (idx === 0 ? " open" : "");
+          const header = document.createElement("div");
+          header.className = "ama-side-header";
+          header.innerHTML = `<span class="chev">▶</span><span>${g.title}</span>`;
+          header.addEventListener("click", () => groupEl.classList.toggle("open"));
+          groupEl.appendChild(header);
+          const items = document.createElement("div");
+          items.className = "ama-side-items";
+          g.rows.forEach((r) => {
+            const row = document.createElement("div");
+            row.className = "row";
+            row.dataset.cmd = r.cmd;
+            let badgeHtml;
+            if (r.digit) badgeHtml = `<span class="digit">${r.digit}</span>`;
+            else if (r.letter) badgeHtml = `<span class="letter">${r.letter}</span>`;
+            else badgeHtml = `<span class="digit-blank">›</span>`;
+            const stepHtml = r.step ? `<span class="step-label">· ${r.step}</span>` : "";
+            row.innerHTML = `${badgeHtml}<span>${r.label}</span>${stepHtml}`;
+            row.title = r.cmd;
+            row.addEventListener("click", async () => {
+              if (!authenticated || typingAnimationActive) return;
+              await animateTypedCommand(r.cmd);
+              await runCommand(r.cmd, r.cmd);
+              terminalInput.value = "";
+              terminalInput.focus();
+            });
+            items.appendChild(row);
+          });
+          groupEl.appendChild(items);
+          amaSide.appendChild(groupEl);
+        });
+      }
+
+      // =====================================================================
+      // Helpers — formatting / rendering
+      // =====================================================================
+      function escapeHtml(text) {
+        return text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+      }
+      function classifyLine(line) {
+        const trimmed = line.trim();
+        if (!trimmed) return "plain";
+        if (line.startsWith("--")) return "comment";
+        if (/^[★►]/.test(trimmed) || /(<--|<==).*(present|changed|reissued|new|updated)/i.test(trimmed))
+          return "highlight";
+        if (/^-{3,}$|^={3,}$/.test(trimmed)) return "divider";
+        if (/^(RP\/|RECEIPT |OFC\/|>|--- RLR ---|--- TST RLR ---|\*\* DATA EXISTS|\*\* THIS IS A )/.test(trimmed))
+          return "meta";
+        if (/^\s*\d+\.[A-Z]/.test(line)) return "passenger";
+        if (/^\s*\d+\s+(SQ|VA|TR|MI)\s.*\bHX\d\b/.test(line)) return "cancelled";
+        if (/^\s*\d+\s+(SQ|VA|TR|MI)\s.*\b(DK\d|HK\d|SS\d)\b.*\(NEW\)/.test(line)) return "newseg";
+        if (/^\s*\d+\s+(SQ|VA|TR|MI)\s/.test(line)) return "segment";
+        if (/^\s*\d+\s+SSR\s|^\s*\d+\s+FF[ A-Z]/.test(line)) return "ssr";
+        if (/TOTALADDCOLL\s+\(3\s*PAX\)|NEW TICKET\s+\d|REISSUED\s*$|\(REISSUED\)|SEGMENTS DROPPED:/i.test(line))
+          return "highlight";
+        if (/^(FARE|TOTAL|GRAND TOTAL|TAXES|TAX|BASE FARE|TOTALADDCOLL|TOTAL ADD COLL|END OF DISPLAY|END OF TRANSACTION|TICKETED|PNR SAVED|EMD ISSUED)/.test(trimmed))
+          return "total";
+        if (/^(WARNING|ERROR|UNABLE|RESTRICTED|NEEDS|FORBIDDEN|INVALID|CANCELLED)/.test(trimmed))
+          return "warn";
+        if (/^(OK|SUCCESS|TKT|EMD |IGNORED|HK|REISSUED)/.test(trimmed)) return "ok";
+        return "plain";
+      }
+      function formatCrypticContent(content) {
+        return content
+          .split("\n")
+          .map((line) => `<div class="cryptic-line ${classifyLine(line)}">${escapeHtml(line) || "&nbsp;"}</div>`)
+          .join("");
+      }
+      function renderScreen(title, content) {
+        activeCommandLabel.textContent = title || "ready";
+        singleCrypticScreen.innerHTML = formatCrypticContent(content || "");
+        singleCrypticScreen.scrollTop = 0;
+      }
+      function pad(n, len) { return String(n).padStart(len, "0"); }
+      function nowStamp() {
+        const d = new Date();
+        return `${DEMO_DAY}/${pad(d.getUTCHours(),2)}${pad(d.getUTCMinutes(),2)}Z`;
+      }
+      function rpHeader() {
+        return `RP/${OFFICE_ID_DEFAULT}/${OFFICE_ID_DEFAULT} ${AGENT_DEFAULT}/SU  ${nowStamp()}  ${currentPnr}`;
+      }
+      const ticketsNow = () => (ticketReissued ? NEW_TICKETS : OLD_TICKETS);
+
+      // =====================================================================
+      // Right itinerary panel
+      // =====================================================================
+      function syncRightPanel() {
+        if (!pnrLoaded) {
+          itinPnrPill.textContent = "No PNR";
+          itinDetails.className = "empty";
+          itinDetails.textContent = "Retrieve a PNR to populate this panel.";
+          itinPax.className = "empty"; itinPax.textContent = "—";
+          itinSegs.className = "empty"; itinSegs.textContent = "—";
+          return;
+        }
+        itinPnrPill.textContent = currentPnr;
+        itinDetails.className = "";
+        const hasNewSq = segments.some((s) => s.kind === "new" && s.flt === "SQ 237");
+        itinDetails.innerHTML = `
+          <div><b>Record locator:</b> ${currentPnr}${ticketReissued ? ' <span style="color:#1f6f43;font-weight:600">(kept on involuntary reissue)</span>' : ""}</div>
+          <div><b>Tickets:</b> ${ticketsNow().join(" / ")}${ticketReissued ? " (reissued)" : ""}</div>
+          <div><b>Services:</b> ${hasNewSq ? "CHML (Ethan) kept on SQ 237" : "CHML (Ethan) on SQ 231 — cancelled"}</div>
+          <div><b>Office:</b> ${OFFICE_ID_DEFAULT}</div>
+          <div><b>Saved:</b> ${pnrSaved ? "yes" : "<span style=color:#b44514>NO — unsaved changes</span>"}</div>
+        `;
+        itinPax.className = "";
+        itinPax.innerHTML = PAX_LIST.map((p) => `
+          <div style="margin-bottom:6px;">
+            <div><b>${p.nameLast}/${p.nameFirst}</b> ${p.title}${p.ptc === "CHD" ? " · CHD" : ""}</div>
+            ${p.ff ? `<div>KrisFlyer ${p.ff} <span style="color:var(--cx-gold);font-weight:600">${p.tier}</span></div>` : ""}
+            ${p.meal ? `<div>${p.meal}</div>` : ""}
+          </div>
+        `).join("");
+        itinSegs.className = "";
+        itinSegs.innerHTML = segments.map((s) => {
+          const cls =
+            s.kind === "cancelled" ? "seg cancelled" :
+            s.kind === "new"       ? "seg added"     : "seg";
+          const badge =
+            s.kind === "cancelled"   ? '<span class="badge">HX3</span>' :
+            s.kind === "new"         ? '<span class="badge">NEW</span>' :
+            s.kind === "reprotected" ? '<span class="badge">AUTO</span>' : "";
+          const seats = s.kind === "new" && SEG_SEATS[s.flt] ? ` · seats ${SEG_SEATS[s.flt]}` : "";
+          return `
+            <div class="${cls}">
+              <div class="flt">${s.flt}${badge}</div>
+              <div>
+                <div class="route">${s.from} → ${s.to} · ${s.cls}${seats}</div>
+                <div class="when">${s.date} · ${s.dep}-${s.arr} · ${s.dur}</div>
+              </div>
+            </div>`;
+        }).join("");
+      }
+
+      // =====================================================================
+      // Cryptic command implementations (Amadeus-style syntax, mock data)
+      // =====================================================================
+      function commentLine(text) { return "\n-- " + text; }
+      function needsPnr(cmd) {
+        return {
+          title: cmd,
+          body: "WARNING  NO ACTIVE PNR. RETRIEVE FIRST WITH:  RT " + currentPnr +
+            commentLine(cmd + " — Requires a retrieved PNR in the work area."),
+        };
+      }
+
+      // ---- RT ------------------------------------------------------------
+      function segLine(s) {
+        let tail = "*1A/E*";
+        if (s.kind === "cancelled") tail = "*1A/E*  ** CANCELLED BY CARRIER **";
+        else if (s.kind === "reprotected") tail = "*1A/E*  AUTO RE-PROTECTION";
+        else if (s.kind === "new")  tail = "*1A/E*  ► REISSUED";
+        return `  ${s.n} ${s.flt} ${s.cls} ${s.date} ${s.dow} ${s.from}${s.to} ${s.status}   ${s.dep}  ${s.arr} ${tail}`;
+      }
+      function rt(ref) {
+        if (ref && ref !== PNR_REF) {
+          return {
+            title: "RT " + ref,
+            body: `WARNING  PNR NOT FOUND: ${ref}\nTRY: RT ${currentPnr}` +
+                  commentLine("RT <recloc> — Retrieve PNR by record locator. Not found above."),
+          };
+        }
+        pnrLoaded = true;
+        const lines = [];
+        lines.push("--- RLR ---");
+        lines.push(rpHeader());
+        PAX_LIST.forEach((p) => lines.push("  " + p.line));
+        segments.forEach((s) => lines.push(segLine(s)));
+        let lineNo = segments.length + PAX_LIST.length;
+        const tkts = ticketsNow();
+        const segRef = ticketReissued ? "S1-2" : "S1";
+        lines.push(`  ${++lineNo} ${PAX_PHONE}`);
+        lines.push(`  ${++lineNo} ${PAX_EMAIL}`);
+        lines.push(`  ${++lineNo} TK OK${DEMO_DAY.slice(0,5)}/${OFFICE_ID_DEFAULT}`);
+        PAX_LIST.forEach((p, i) => {
+          const amt = p.ptc === "ADT" ? "SGD1420" : "SGD1065";
+          const issued = ticketReissued ? DEMO_DAY : "02SEP26";
+          lines.push(`  ${++lineNo} FA PAX${p.n} ${tkts[i]}/ETSQ/${amt}/${issued}/${OFFICE_ID_DEFAULT}/38291045/${segRef}`);
+        });
+        lines.push(`  ${++lineNo} FB PAX 0000000001 TTP OK ETICKET`);
+        lines.push(`  ${++lineNo} FE PAX ${ticketReissued ? "INVOL REROUTE/UPG DUE SQ231 CXL-NONEND" : "CHG FEE APPLIES/NONEND"}`);
+        lines.push(`  ${++lineNo} FP CC VI-XXXX-XXXX-4417/0929`);
+        PAX_LIST.forEach((p) => {
+          lines.push(`  ${++lineNo} SSR DOCS SQ HK1-P${p.n}/SGP/${p.docNo}/SGP/${p.dob}/${p.gender}/12MAR31/${p.nameLast}/${p.nameFirst}`);
+        });
+        const hasCancelled = segments.some((s) => s.kind === "cancelled");
+        const newSq = segments.find((s) => s.kind === "new" && s.flt === "SQ 237");
+        const newVa = segments.find((s) => s.kind === "new" && s.flt === "VA 822");
+        if (hasCancelled) {
+          lines.push(`  ${++lineNo} SSR CHML SQ HX1/S1/P2   CHILD MEAL  ** ON CANCELLED SEGMENT **`);
+          lines.push(`  ${++lineNo} SSR CHML SQ NO1/S2/P2   ** NOT CARRIED TO RE-PROTECTED SEGMENT **`);
+        }
+        if (newSq) {
+          lines.push(`  ${++lineNo} SSR CHML SQ HK1/S${newSq.n}/P2   CHILD MEAL  (ETHAN)`);
+          lines.push(`  ${++lineNo} SSR RQST SQ HK3/S${newSq.n}/P1-3 31D 31E 31F  FAMILY SEATED TOGETHER`);
+        }
+        if (newVa) {
+          lines.push(`  ${++lineNo} SSR RQST VA KK3/S${newVa.n}/P1-3 22A 22B 22C  FAMILY SEATED TOGETHER`);
+        }
+        lines.push(`  ${++lineNo} SSR FQTV SQ HK1/P1 SQ${PAX1.ff}/${PAX1.tier}`);
+        lines.push(`  ${++lineNo} FF SQ ${PAX1.ff}/${PAX1.tier}  (P1)`);
+        if (hasCancelled) {
+          lines.push(`  ${++lineNo} RM INVOL CHG REQUIRED — SQ231 20OCT SIN-SYD CANCELLED (TECHNICAL)`);
+          lines.push(`  ${++lineNo} RM AUTO RE-PROTECTION SQ221 21OCT ARR 1845 — PAX EVENT SYD 21OCT 1700, REVIEW`);
+          lines.push(`  ${++lineNo} RM DUTY MANAGER APPROVAL ON FILE — INVOL UPG TO W ON SQ237 + ADD VA822`);
+          lines.push(`  ${++lineNo} OPW ${OFFICE_ID_DEFAULT}-20OCT:2359/SQ DISRUPTION WAIVER WX/INVOL — NO FARE DIFF`);
+        }
+        if (!hasCancelled && newSq) {
+          lines.push("");
+          lines.push("★ REISSUE COMPLETE — PNR NOW REFLECTS THE NEW ROUTING (SIN → MEL → SYD)");
+          lines.push("  · SQ 237 W SIN-MEL + VA 822 Y MEL-SYD  REPLACE  SQ 231 Y SIN-SYD (CANCELLED)");
+          lines.push("  · AUTO RE-PROTECTION SQ 221 21OCT RELEASED");
+          lines.push("  · CONNECTION: " + LAYOVER_MEL);
+          lines.push("  · RECORD LOCATOR UNCHANGED: " + currentPnr);
+        }
+        const annotation = hasCancelled
+          ? "RT — Retrieved PNR " + currentPnr + ". SQ231 is cancelled (HX3); auto re-protection SQ221 lands after the family's event, and Ethan's CHML did not carry over."
+          : "RT — Retrieved PNR " + currentPnr + ". Itinerary now reflects the new routing via MEL; record locator unchanged.";
+        return { title: "RT " + (ref || currentPnr), body: lines.join("\n") + commentLine(annotation) };
+      }
+
+      // ---- RTTN ----------------------------------------------------------
+      function rttn() {
+        if (!pnrLoaded) return needsPnr("RTTN");
+        const tkts = ticketsNow();
+        const segRef = ticketReissued ? "S1-2" : "S1";
+        const issueDate = ticketReissued ? DEMO_DAY : "02SEP26";
+        const body = ["*TKT*"];
+        PAX_LIST.forEach((p, i) => {
+          const amt = p.ptc === "ADT" ? "SGD1420" : "SGD1065";
+          body.push(
+            `TKT  ${tkts[i]}` + (ticketReissued ? "   (REISSUED)" : ""),
+            `PASSENGER ${p.n}  ${p.nameLast}/${p.nameFirst} ${p.title}  ${p.ptc}`,
+            `FA PAX${p.n} ${tkts[i]}/ETSQ/${amt}/${issueDate}/${OFFICE_ID_DEFAULT}/38291045/${segRef}`,
+            "",
+          );
+        });
+        body.push("FP CC VI-XXXX-XXXX-4417/0929", "FV PAX SQ");
+        return { title: "RTTN", body: body.join("\n") + commentLine("RTTN — Ticket numbers (FA lines) attached to the PNR. Three tickets — one per passenger.") };
+      }
+
+      // ---- RTG -----------------------------------------------------------
+      function rtg() {
+        if (!pnrLoaded) return needsPnr("RTG");
+        const body = [
+          "RTG  - SERVICES VIEW -  PNR " + currentPnr,
+          "------------------------------------------------------------",
+          "  / = CHARGEABLE     # = ENTITLED (FREE)     OTHER = REGULATORY/INFO",
+          "",
+          "  # SEAT 45A/45B/45C SQ 231 Y 20OCT SIN-SYD/P1-3  ** ON CANCELLED LEG **",
+          "  # SEAT —           SQ 221 Y 21OCT SIN-SYD/P1-3  NOT SEATED TOGETHER ON RE-PROTECTION",
+          "  # BAG 2PC 30K      SQ 231 Y 20OCT SIN-SYD/P1    ELITE GOLD ALLOWANCE",
+          "  # BAG 30K          SQ 231 Y 20OCT SIN-SYD/P2-3  CHD ALLOWANCE",
+          "  # LOUNGE           SIN  ELITE GOLD (P1 + 1 GUEST)",
+          "    SSR CHML SQ HX1/S1/P2               CHILD MEAL (ETHAN) ** ON CANCELLED SEGMENT — RE-ADD **",
+          "    SSR CHML SQ NO1/S2/P2               ** DROPPED ON RE-PROTECTION **",
+          "    SSR DOCS SQ HK1/P1                  P/SGP/" + PAX1.docNo + "/" + PAX1.dob + "/F/LIM/MAYA",
+          "    SSR DOCS SQ HK1/P2                  P/SGP/" + PAX2.docNo + "/" + PAX2.dob + "/M/LIM/ETHAN",
+          "    SSR DOCS SQ HK1/P3                  P/SGP/" + PAX3.docNo + "/" + PAX3.dob + "/F/LIM/CHLOE",
+          "    SSR FQTV SQ HK1/P1                  SQ" + PAX1.ff + "/" + PAX1.tier,
+          "    SSR CTCM SQ +65-6555-0142",
+          "    SSR CTCE SQ MAYA.LIM//EXAMPLE.COM",
+          "",
+          "  -- ALL SERVICES ABOVE MUST BE KEPT ON THE NEW ITINERARY --",
+          "  -- CHILDREN (P2, P3) MUST BE SEATED WITH THE ADULT (P1) --",
+        ].join("\n");
+        return { title: "RTG", body: body + commentLine("RTG — Services / SSRs on the PNR. Ethan's CHML must be re-added on the new SQ segment, and the family seated together.") };
+      }
+
+      // ---- RHA -----------------------------------------------------------
+      function rha() {
+        if (!pnrLoaded) return needsPnr("RHA");
+        const body = [
+          "*HISTORY*  PNR " + currentPnr,
+          "----------------------------------------------------------",
+          "CR-PNR 02SEP26/0412Z WEB-SQ     CREATE PNR (SINGAPOREAIR.COM)",
+          "NM-PAX 02SEP26/0412Z WEB-SQ     NM1LIM/MAYA MRS NM1LIM/ETHAN MSTR(CHD) NM1LIM/CHLOE MISS(CHD)",
+          "SE-AS  02SEP26/0413Z WEB-SQ     ADD SS 3 SQ 231 Y 20OCT SIN SYD HK3",
+          "FA-PAX 02SEP26/0415Z WEB-SQ     ETKT " + OLD_TICKETS.join(" / ") + " ISSUED",
+          "SR-PAX 02SEP26/0416Z WEB-SQ     CHML/S1/P2 / SEATS 45A-C",
+          "XS-AS  20OCT26/0905Z SQ-OCC     SQ 231 20OCT SIN-SYD CANCELLED HX3 (TECHNICAL)",
+          "RP-AS  20OCT26/0906Z SQ-REACC   AUTO RE-PROTECTION SS 3 SQ 221 Y 21OCT SIN SYD HK3",
+          "OPW-AS 20OCT26/0906Z SQ-REVMG   DISRUPTION WAIVER WX/INVOL — NO FARE DIFF",
+          "RM-AS  20OCT26/1052Z SQ-DUTYMGR APPROVED INVOL UPG W SQ237 + VA822 FOR P1-3",
+        ].join("\n");
+        return { title: "RHA", body: body + commentLine("RHA — PNR history: the carrier cancellation (XS), the automatic re-protection (RP), the waiver (OPW) and the duty manager's approval.") };
+      }
+
+      // ---- IR / IG -------------------------------------------------------
+      function resetState() {
+        segments = JSON.parse(JSON.stringify(ORIGINAL_SEGMENTS));
+        lastAvailability = null;
+        tstCreated = false; totalAddColl = null; ticketReissued = false; oldSegmentsRemoved = false;
+        currentPnr = PNR_REF;
+      }
+      function ir() {
+        if (!pnrLoaded) return needsPnr("IR");
+        pnrSaved = true;
+        resetState();
+        return {
+          title: "IR",
+          body: "OK  IR  PNR RESTORED FROM LAST SAVED STATE." +
+                commentLine("IR — Refresh PNR: drops unsaved changes and re-reads the last persisted state."),
+        };
+      }
+      function ig() {
+        pnrLoaded = false; pnrSaved = true;
+        resetState();
+        return { title: "IG", body: "OK  IG  WORK AREA CLEARED." +
+          commentLine("IG — Ignore current work area (drops the PNR without saving).") };
+      }
+
+      // ---- TWD -----------------------------------------------------------
+      function twd(suffix) {
+        if (!pnrLoaded) return needsPnr("TWD");
+        if (suffix === "/FFY") {
+          return {
+            title: "TWD/FFY",
+            body: [
+              "--- TST FARE FAMILY ---",
+              "PNR " + currentPnr + "  PAX 1.LIM/MAYA + 2.LIM/ETHAN(CHD) + 3.LIM/CHLOE(CHD)",
+              "ECONOMY STANDARD (YSG3M)",
+              "  CHANGES ALLOWED WITH FEE (WAIVED ON INVOL)",
+              "  REFUNDABLE WITH PENALTY (WAIVED ON INVOL)",
+              "  30KG BAGGAGE INCLUDED",
+              "  INVOL UPGRADE TO PREMIUM ECONOMY (W) — NO FARE DIFFERENCE",
+            ].join("\n") + commentLine("TWD/FFY — Fare family attached to the TST."),
+          };
+        }
+        if (!tstCreated) {
+          return {
+            title: "TWD",
+            body: "WARNING  NO TST FOUND. USE FXP OR FXQ FIRST." +
+                  commentLine("TWD — Display TST (Transitional Stored Ticket). Create one with FXP / FXQ first."),
+          };
+        }
+        return { title: "TWD" + (suffix || ""), body: tstBody() + commentLine("TWD — Display TST (priced itinerary stored after FXP / FXQ).") };
+      }
+      function tstBody() {
+        const newSegs = segments.filter((s) => s.kind === "new");
+        const rows = newSegs.length ? newSegs : segments;
+        return [
+          "--- TST RLR ---  TST 0002  PAX 1-3",
+          `PSGR 1  LIM/MAYA        ADT   KF ${PAX1.ff}  ${PAX1.tier}`,
+          "PSGR 2  LIM/ETHAN       CHD",
+          "PSGR 3  LIM/CHLOE       CHD",
+          "VALIDATING CARRIER  SQ (618)",
+          "",
+          "  SEG  FLIGHT  CLASS  DATE   ROUTE      FARE BASIS  NVB/NVA",
+          "  ---  ------  -----  -----  ---------  ----------  ----------",
+          ...rows.map((s) =>
+            `  ${s.n}    ${s.flt}  ${s.cls}      ${s.date}  ${s.from}-${s.to}    YSG3M/IN    ${s.date}/${s.date}`),
+          "",
+          "  ORIGINAL TICKETED VALUE   ADT SGD 1,420.00   CHD SGD 1,065.00 x2",
+          "  NEW FARE                  SAME — INVOL REROUTE AND UPGRADE (W)",
+          "  FARE DIFFERENCE           WAIVED (WX/INVOL)",
+          "  PENALTIES                 SGD 0.00",
+          "  TAX DIFFERENCE            SGD 0.00",
+          "  TOTALADDCOLL (3 PAX)      SGD 0.00",
+        ].join("\n");
+      }
+
+      // ---- Availability --------------------------------------------------
+      const AVAIL_POOL = {
+        "SINMEL_SQ_20OCT": [
+          { line: 1, flt: "SQ 237", cls: "J2 C0 D0 Z0 W4 R2 Y3 B0 E0 M0 H0 Q0", dep: "2355", arr: "0955+1", eq: "359", op: "SQ", note: "Y: NO 3 ADJACENT SEATS · W: 31D-F ADJACENT" },
+          { line: 2, flt: "SQ 217", cls: "J0 C0 D0 Z0 W0 R0 Y1 B0 E0 M0 H0 Q0", dep: "2200", arr: "0800+1", eq: "77W", op: "SQ" },
+        ],
+        "SINSYD_SQ_21OCT": [
+          { line: 1, flt: "SQ 221", cls: "J4 C2 D0 Z0 W6 R3 Y9 B7 E4 M2 H0 Q0", dep: "0815", arr: "1845", eq: "77W", op: "SQ" },
+          { line: 2, flt: "SQ 211", cls: "J2 C0 D0 Z0 W2 R0 Y4 B2 E0 M0 H0 Q0", dep: "1340", arr: "2355", eq: "359", op: "SQ" },
+        ],
+        "MELSYD_VA_21OCT": [
+          { line: 1, flt: "VA 822", cls: "J2 C1 D0 Y9 B9 H7 K5 L4 E2 N0", dep: "1145", arr: "1320", eq: "73H", op: "VA", note: "Y: 22A-C ADJACENT" },
+          { line: 2, flt: "VA 826", cls: "J0 C0 D0 Y6 B4 H2 K0 L0 E0 N0", dep: "1345", arr: "1520", eq: "73H", op: "VA" },
+        ],
+      };
+      const DURATIONS = { "SINMEL": "7H 0M", "MELSYD": "1H 35M", "SINSYD": "7H 30M" };
+      function an(args) {
+        const m = args.match(/^AN(\d{2}[A-Z]{3})([A-Z]{3})([A-Z]{3})(\/A([A-Z]{2}))?(\/C([A-Z]))?$/i);
+        if (!m) {
+          return {
+            title: "AN " + args,
+            body: "WARNING  USE: AN<DDMMM><ORI><DST>/A<CXR>[/C<CL>]" +
+                  commentLine("AN — Availability search. Add /A<CXR> to restrict carrier; /C<class> to restrict cabin."),
+          };
+        }
+        const [, dt, ori, dst, , cxr] = m;
+        const key = `${ori}${dst}_${cxr || "ANY"}_${dt}`;
+        const rows = AVAIL_POOL[key];
+        if (!rows) {
+          return {
+            title: "AN " + args,
+            body: `NO DIRECT SERVICE ${ori}-${dst} ON ${dt}` +
+                  commentLine("AN — No direct match. Try a different carrier or date."),
+          };
+        }
+        lastAvailability = { dt, ori, dst, cxr, rows };
+        const out = [`** AMADEUS AVAILABILITY ** ${dt} ${ori} ${dst}  - DIRECT ${cxr ? cxr : "ALL"} -`];
+        rows.forEach((r) => {
+          out.push(`  ${r.line} ${r.flt}  ${r.cls}`);
+          out.push(`             ${ori} ${dst}   ${r.dep}  ${r.arr}   E0/${r.eq}` + (r.note ? `   ${r.note}` : ""));
+        });
+        out.push("  ** END OF DISPLAY - USE SS<seats><class><line> TO SELL **");
+        const comment = ori === "SIN" && dst === "MEL"
+          ? "AN — SQ availability SIN-MEL tonight. SQ 237 has no three Economy seats together, but Premium Economy (W) has 31D-F together."
+          : ori === "MEL" && dst === "SYD"
+          ? "AN — Virgin Australia availability MEL-SYD. VA 822 departs 1H 50M after SQ 237 arrives (MCT 1H 30M international to domestic)."
+          : "AN — Direct " + (cxr || "all-carrier") + " availability for " + ori + "-" + dst + " on " + dt + ".";
+        return { title: "AN " + args, body: out.join("\n") + commentLine(comment) };
+      }
+
+      // ---- TN ------------------------------------------------------------
+      function tn(args) {
+        const m = args.match(/^TN(\d{2}[A-Z]{3})([A-Z]{3})([A-Z]{3})$/i);
+        if (!m) return { title: "TN " + args, body: "WARNING  USE: TN<DDMMM><ORI><DST>" };
+        const [, dt, ori, dst] = m;
+        const body = [
+          `** AMADEUS TIMETABLE ** ${dt} ${ori} ${dst}`,
+          "  SQ 217  DAILY   SIN 2200  MEL 0800+1  B777-300ER  STOPS 0",
+          "  SQ 237  DAILY   SIN 2355  MEL 0955+1  A350-900    STOPS 0",
+        ].join("\n");
+        return { title: "TN " + args, body: body + commentLine("TN — Timetable: scheduled service (no live seat availability).") };
+      }
+
+      // ---- SS / SB / XE --------------------------------------------------
+      function ss(args) {
+        if (!pnrLoaded) return needsPnr("SS");
+        if (!lastAvailability) {
+          return { title: "SS " + args, body: "WARNING  NO AN RESULT IN BUFFER. RUN AN FIRST." +
+            commentLine("SS — Sell from availability. Requires a recent AN search.") };
+        }
+        const lineMatch = args.match(/(\d+)([A-Z])(\d+)/);
+        const seatCount = lineMatch ? parseInt(lineMatch[1], 10) : 3;
+        const cls = lineMatch ? lineMatch[2] : "Y";
+        const lineNum = lineMatch ? parseInt(lineMatch[3], 10) : 1;
+        const row = lastAvailability.rows.find((r) => r.line === lineNum);
+        const free = row ? parseInt((row.cls.match(new RegExp("\\b" + cls + "(\\d)")) || [])[1] || "0", 10) : 0;
+        if (!row || free < seatCount) {
+          return { title: "SS " + args, body: "WARNING  LINE " + lineNum + " CLASS " + cls + " NOT SELLABLE FOR " + seatCount + " SEATS." +
+            commentLine("SS — Not enough seats in that class on that line.") };
+        }
+        const ori = lastAvailability.ori;
+        const dst = lastAvailability.dst;
+        const dt  = lastAvailability.dt;
+        const newSeg = {
+          n: segments.length + 1, flt: row.flt, cls, date: dt,
+          dow: dt === "20OCT" ? "2" : "3", from: ori, to: dst, status: "DK" + seatCount,
+          dep: row.dep, arr: row.arr,
+          dur: DURATIONS[ori + dst] || "—",
+          op: row.op === "VA" ? "VIRGIN AUSTRALIA" : "SINGAPORE AIRLINES",
+          equip: row.eq, fareBasis: "YSG3M", kind: "new",
+        };
+        segments.push(newSeg);
+        pnrSaved = false;
+        lastAvailability = null;
+
+        const sellLine = `  ${newSeg.n} ${newSeg.flt} ${cls} ${dt} ${newSeg.dow} ${ori}${dst} ${newSeg.status}   ${row.dep}  ${row.arr} *1A/E*  (NEW)`;
+        const extra = newSeg.flt === "SQ 237"
+          ? ["  ► SEATS 31D 31E 31F HELD FOR P1-3 — FAMILY SEATED TOGETHER",
+             "  ► SSR CHML SQ HK1/S" + newSeg.n + "/P2 RE-ADDED FROM ORIGINAL BOOKING (ETHAN)"]
+          : newSeg.flt === "VA 822"
+          ? ["  ► SEATS 22A 22B 22C REQUESTED FROM VA (KK3) — FAMILY SEATED TOGETHER",
+             "  ► CONNECTION AT MEL 1H 50M — MEETS MCT 1H 30M (INTL-DOM)"]
+          : [];
+        const body = [
+          rpHeader(),
+          ...PAX_LIST.map((p) => "  " + p.line),
+          sellLine,
+          "  ► SEGMENT ADDED FOR P1-3 — STATUS " + newSeg.status + " (pending confirmation)",
+          ...extra,
+        ].join("\n");
+        return {
+          title: "SS " + args,
+          body: body + commentLine("SS — Sold " + seatCount + " seat(s) in class " + cls + " from AN line " + lineNum + " (" + newSeg.flt + " " + ori + "-" + dst + "). Status " + newSeg.status + " until ER."),
+        };
+      }
+      function sb(args) {
+        if (!pnrLoaded) return needsPnr("SB");
+        pnrSaved = false;
+        return {
+          title: "SB " + args,
+          body: "OK  REBOOKED TO CLASS " + (args[0] || "W") +
+            commentLine("SB — Rebook existing segments to a new RBD without re-running availability."),
+        };
+      }
+      function xe(args) {
+        if (!pnrLoaded) return needsPnr("XE");
+        const m = args.match(/^(\d+(?:,\d+)*)/);
+        const target = m ? m[1] : null;
+        if (!target) return { title: "XE " + args, body: "WARNING  USE: XE<segment-number(s)>" };
+        if (!ticketReissued) {
+          return {
+            title: "XE " + args,
+            body: [
+              "WARNING  XE DELETES SEGMENT(S) FROM THE PNR.",
+              "  DO NOT XE BEFORE THE NEW TICKETS ARE ISSUED.",
+              "  RUN FXQ / TTP / RF KRIS;ER FIRST.",
+              "  ABORTED.",
+            ].join("\n") + commentLine("XE — Aborted. Original segments are only removed after the new tickets are issued."),
+          };
+        }
+        const nums = target.split(",").map((x) => parseInt(x, 10));
+        const removed = segments.filter((s) => nums.includes(s.n));
+        segments = segments.filter((s) => !nums.includes(s.n));
+        segments.forEach((s, idx) => (s.n = idx + 1));
+        pnrSaved = false;
+        oldSegmentsRemoved = true;
+        return {
+          title: "XE " + args,
+          body: "OK  REMOVED  " + removed.map((s) => s.flt + " " + s.from + "-" + s.to).join(" / ") +
+            commentLine("XE — Removed segment(s) " + target + " from the PNR."),
+        };
+      }
+
+      // ---- SM / ST -------------------------------------------------------
+      function sm(args) {
+        if (!pnrLoaded) return needsPnr("SM");
+        const segNum = parseInt((args || "3").replace(/[^0-9]/g, ""), 10) || 3;
+        const target = segments.find((s) => s.n === segNum) || segments[segments.length - 1];
+        const body = [
+          `*** SM${segNum} - SEAT MAP - ${target.flt} ${target.date} ${target.from}-${target.to} ***`,
+          `  ${target.equip}   CABIN ${target.cls}   ROWS 31-35   CONFIG 2-4-2`,
+          "",
+          "        A  C     D  E  F  G     H  K",
+          "   31  [X][X]   [#][#][#][X]   [X][.]   <-  31D LIM/MAYA · 31E LIM/ETHAN · 31F LIM/CHLOE",
+          "   32  [X][.]   [X][X][X][X]   [X][X]",
+          "   33  [X][X]   [X][.][X][X]   [.][X]",
+          "   34  [.][X]   [X][X][.][X]   [X][X]",
+          "   35  [X][X]   [X][X][X][.]   [X][X]",
+          "",
+          "LEGEND   [.] FREE   [X] OCCUPIED   [#] HELD FOR THIS PNR",
+          "FAMILY SEATED TOGETHER:  P2 AND P3 (CHD) NEXT TO P1 (ADT).",
+        ].join("\n");
+        return { title: "SM" + segNum, body: body + commentLine("SM — Seat map for segment " + segNum + ".") };
+      }
+      function st(args) {
+        if (!pnrLoaded) return needsPnr("ST");
+        pnrSaved = false;
+        const m = args.match(/^\/?(\d{1,2}[A-K])\/P(\d+)$/i);
+        if (!m) return { title: "ST " + args, body: "WARNING  USE: ST/<row><col>/P<n>  e.g. ST/31D/P1" };
+        const [, seat, paxNum] = m;
+        const p = paxByNum(paxNum);
+        return {
+          title: "ST" + args,
+          body: [
+            "*** SEAT REQUEST ***",
+            "PAX P" + paxNum + "  " + p.nameLast + "/" + p.nameFirst + " " + p.title,
+            "SEAT " + seat.toUpperCase() + "  STATUS HK — HELD",
+            "PRESS ER (or RF KRIS;ER) TO COMMIT.",
+          ].join("\n") + commentLine("ST — Reserve seat " + seat.toUpperCase() + " for pax " + paxNum + " (pending commit)."),
+        };
+      }
+
+      // ---- SR ------------------------------------------------------------
+      function sr(args) {
+        if (!pnrLoaded) return needsPnr("SR");
+        pnrSaved = false;
+        const mealCodes = {
+          CHML: "CHILD MEAL",             VGML: "VEGETARIAN VEGAN MEAL",
+          AVML: "ASIAN VEGETARIAN",       VLML: "VEGETARIAN LACTO-OVO",
+          HNML: "HINDU NON-VEGETARIAN",   MOML: "MUSLIM MEAL",
+          KSML: "KOSHER",                 DBML: "DIABETIC",
+          BBML: "BABY MEAL",              LSML: "LOW SALT",
+        };
+        const upper = args.toUpperCase().trim();
+        const liveSegs = segments.filter((s) => s.kind === "new").map((s) => "S" + s.n).join(",") || "S2";
+        if (upper.startsWith("DOCS")) {
+          return {
+            title: "SR DOCS",
+            body: [
+              ...PAX_LIST.map((p) => `SSR DOCS SQ HK1/P${p.n}-P/SGP/${p.docNo}/SGP/${p.dob}/${p.gender}/12MAR31/${p.nameLast}/${p.nameFirst}`),
+              `STATUS  HK3  ON SEGMENTS ${liveSegs}`,
+            ].join("\n") + commentLine("SR DOCS — Passenger documentation SSR for all three passengers on the live segments."),
+          };
+        }
+        const m = upper.match(/^([A-Z]{4})(?:\/P(\d+))?/);
+        if (m && mealCodes[m[1]]) {
+          const code = m[1]; const paxNum = m[2] || "2";
+          const p = paxByNum(paxNum);
+          return {
+            title: "SR " + code + "/P" + paxNum,
+            body: [
+              "SSR " + code + " SQ HK1/" + liveSegs + "/P" + paxNum + " — " + mealCodes[code],
+              "  PAX P" + paxNum + "  " + p.nameLast + "/" + p.nameFirst + " " + p.title,
+            ].join("\n") + commentLine("SR " + code + " — Meal SSR attached for pax " + paxNum + " on the live segments."),
+          };
+        }
+        return { title: "SR " + args, body: "WARNING  USE: SR <CODE>/P<n>  e.g. SR CHML/P2" };
+      }
+
+      // ---- FXQ / FXO / FXP / FXX -----------------------------------------
+      function fxq(args) {
+        if (!pnrLoaded) return needsPnr("FXQ");
+        const newSegs = segments.filter((s) => s.kind === "new");
+        if (newSegs.length === 0) {
+          return { title: "FXQ " + args, body: "WARNING  NO NEW SEGMENTS TO PRICE. RUN AN + SS FIRST." +
+            commentLine("FXQ — Only newly added segments are priced on a reissue.") };
+        }
+        tstCreated = true;
+        pnrSaved = false;
+        totalAddColl = "0.00";
+        const segs = /S\d/i.test(args) ? args.match(/S[\d,]+/i)[0] : "S" + newSegs.map((s) => s.n).join(",");
+        const pax = /P\d/i.test(args) ? args.match(/P[\d-]+/i)[0] : "P1-3";
+        return {
+          title: "FXQ " + args,
+          body: [
+            "*** FXQ — REISSUE PRICING (INVOLUNTARY) ***",
+            "TARGET " + segs + " / " + pax + "   WAIVER WX/INVOL (SQ231 CXL)",
+            "",
+            ...newSegs.map((s) => `  ${s.flt} ${s.cls} ${s.date} ${s.from}-${s.to}  YSG3M/IN`),
+            "",
+            "  ORIGINAL TICKETED VALUE   ADT SGD 1,420.00   CHD SGD 1,065.00 x2",
+            "  NEW FARE                  EQUAL VALUE — INVOL REROUTE",
+            "  CABIN CHANGE              Y → W ON SQ 237 — INVOL UPGRADE, NO CHARGE",
+            "  FARE DIFFERENCE           WAIVED (WX/INVOL)",
+            "  PENALTIES                 SGD 0.00",
+            "  TAX DIFFERENCE            SGD 0.00",
+            "  ★ TOTALADDCOLL (3 PAX)    SGD 0.00   <-- nothing to collect",
+            "",
+            "  VALIDATING                SQ (618)",
+            "  TST STORED                TST 0002",
+          ].join("\n") +
+            commentLine("FXQ — Repriced the new SQ and VA segments for three passengers under the disruption waiver. Nothing to collect."),
+        };
+      }
+      function fxo(args) {
+        if (!pnrLoaded) return needsPnr("FXO");
+        if (!/\/K/i.test(args)) {
+          return {
+            title: "FXO " + args,
+            body: "WARNING  FXO WITHOUT /K MAY CHANGE CABIN.\nUSE: FXO/K   (or prefer FXQ)" +
+              commentLine("FXO — Best pricer. Add /K to keep the booked cabin."),
+          };
+        }
+        tstCreated = true; pnrSaved = false; totalAddColl = "0.00";
+        return {
+          title: "FXO " + args,
+          body: [
+            "*** FXO/K — BEST PRICER (CABIN-LOCKED) ***",
+            "  SQ 237 W 20OCT SIN-MEL  YSG3M/IN",
+            "  VA 822 Y 21OCT MEL-SYD  YSG3M/IN",
+            "  TOTALADDCOLL (3 PAX)    SGD 0.00",
+            "  TST STORED              TST 0002",
+          ].join("\n") + commentLine("FXO/K — Best pricer with the cabin kept."),
+        };
+      }
+      function fxp() {
+        if (!pnrLoaded) return needsPnr("FXP");
+        tstCreated = true; pnrSaved = false;
+        return { title: "FXP", body: tstBody() +
+          commentLine("FXP — Price the itinerary and store a TST.") };
+      }
+      function fxx() {
+        if (!tstCreated) return { title: "FXX", body: "WARNING  NO TST TO CANCEL." };
+        tstCreated = false; totalAddColl = null;
+        return { title: "FXX", body: "OK  TST 0002 CANCELLED." +
+          commentLine("FXX — Cancel an unticketed TST so a new fare can be quoted.") };
+      }
+
+      // ---- TTP / TTI -----------------------------------------------------
+      function ttp(args) {
+        if (!pnrLoaded) return needsPnr("TTP");
+        if (!tstCreated) return { title: "TTP " + args, body: "WARNING  NO TST — RUN FXQ OR FXP FIRST." };
+        ticketReissued = true; pnrSaved = false;
+        const body = ["*** TTP — REISSUE TICKETS ***", "VALIDATING  SQ (618)", ""];
+        PAX_LIST.forEach((p, i) => {
+          body.push(
+            "PAX " + p.n + "       " + p.nameLast + "/" + p.nameFirst + " " + p.title + "  " + p.ptc,
+            "OLD TICKET  " + OLD_TICKETS[i] + "   (exchanged)",
+            "★ NEW TICKET " + NEW_TICKETS[i] + "   ISSUED",
+            "",
+          );
+        });
+        body.push(
+          "STATUS      TKT OK / ETICKET",
+          "ENDORSEMENT INVOL REROUTE/UPG DUE SQ231 CXL-NONEND",
+          "TOTALADDCOLL SGD " + (totalAddColl || "0.00"),
+        );
+        return {
+          title: "TTP " + args,
+          body: body.join("\n") + commentLine("TTP — Reissued three electronic tickets from the stored TST: " + NEW_TICKETS.join(", ") + ". Nothing collected."),
+        };
+      }
+      function tti() {
+        if (!pnrLoaded) return needsPnr("TTI");
+        const live = segments.filter((s) => s.kind === "new");
+        const tkts = ticketsNow();
+        return {
+          title: "TTI",
+          body: [
+            "*** TTI — ITINERARY RECEIPT ***",
+            "PNR " + currentPnr,
+            ...PAX_LIST.map((p, i) => `PAX ${p.n}   ${p.nameLast}/${p.nameFirst} ${p.title}   TKT ${tkts[i]}` + (p.ff ? `   KF ${p.ff} ${p.tier}` : "")),
+            "",
+            "  SEG  FLIGHT  DATE   ROUTE      CLASS  STATUS",
+            "  ---  ------  -----  ---------  -----  ------",
+            ...live.map((s) => `  ${s.n}    ${s.flt}  ${s.date}  ${s.from}-${s.to}    ${s.cls}      ${s.status}`),
+            "",
+            "  CONNECTION    " + LAYOVER_MEL,
+            "  SEATS         SQ 237 31D 31E 31F · VA 822 22A 22B 22C — FAMILY TOGETHER",
+            "  MEALS         CHML (ETHAN) ON SQ 237",
+            "  ENDORSEMENTS  INVOL REROUTE/UPG DUE SQ231 CXL — FARE DIFF WAIVED",
+          ].join("\n") + commentLine("TTI — Itinerary receipt for all three passengers (current routing only)."),
+        };
+      }
+
+      // ---- ER / RF KRIS;ER ----------------------------------------------
+      // (Kris is the airline's AI agent that owns this PNR change.)
+      function er() {
+        if (!pnrLoaded) return needsPnr("ER");
+        pnrSaved = true;
+        return {
+          title: "ER",
+          body: [
+            "PROCESSING.....",
+            "PNR SAVED          " + currentPnr,
+            "NOTE               ER ALONE — PREFER RF KRIS;ER FOR THE AUDIT TRAIL",
+          ].join("\n") + commentLine("ER — End & redisplay. Saves the PNR; RF KRIS;ER also records who made the change."),
+        };
+      }
+      function rfKrisEr() {
+        if (!pnrLoaded) return needsPnr("RF KRIS;ER");
+        pnrSaved = true;
+        let removedNote = "";
+        if (ticketReissued && !oldSegmentsRemoved) {
+          const removed = segments.filter((s) => s.kind === "cancelled" || s.kind === "reprotected");
+          segments = segments.filter((s) => s.kind === "new");
+          segments.forEach((s, i) => { s.n = i + 1; s.status = "HK3"; });
+          oldSegmentsRemoved = true;
+          removedNote =
+            "\n► SEGMENTS DROPPED:  " + removed.map((s) => s.flt + " " + s.from + "-" + s.to).join("  /  ") +
+            "  (after the new tickets were issued)" +
+            "\n★ RECORD LOCATOR UNCHANGED:  " + currentPnr + "  — press  k  (or run RT " + currentPnr + ") to verify.";
+        }
+        return {
+          title: "RF KRIS;ER",
+          body: [
+            "RECEIVED FROM      KRIS (AI AGENT)",
+            "PROCESSING.....",
+            "PNR SAVED          " + currentPnr,
+            "TICKETED           " + ticketsNow().join(" / ") + (ticketReissued ? " (REISSUED)" : ""),
+            "STATUS             HK3 ON ALL LIVE SEGMENTS" + removedNote,
+            "END OF TRANSACTION — THANK YOU",
+          ].join("\n") + commentLine("RF KRIS;ER — End of transaction with the RF audit trail. The cancelled SQ231 and the auto re-protection SQ221 are dropped only after ticketing."),
+        };
+      }
+
+      // ---- FF / misc -----------------------------------------------------
+      function ff(args) {
+        const upper = args.toUpperCase();
+        if (upper.includes("/P")) {
+          if (!pnrLoaded) return needsPnr("FFSQ/P");
+          pnrSaved = false;
+          return { title: "FF " + args,
+            body: "OK  KRISFLYER " + PAX1.ff + " " + PAX1.tier + " ATTACHED TO PNR " + currentPnr + " (P1)" +
+              commentLine("FF…/P<n> — Attach a KrisFlyer number to passenger 1 (LIM/MAYA).") };
+        }
+        return {
+          title: "FF " + args,
+          body: [
+            "*** FF DISPLAY ***",
+            "PROGRAM        KRISFLYER (SQ)",
+            "MEMBER ID      " + PAX1.ff,
+            "NAME           LIM/MAYA MRS",
+            "TIER           " + PAX1.tier + "  (STAR ALLIANCE GOLD)",
+            "KRISFLYER MILES 182,400",
+            "HOME AIRPORT   SIN",
+            "BENEFITS       Priority check-in / boarding · Lounge access · Extra baggage",
+          ].join("\n") + commentLine("FF — KrisFlyer profile for LIM/MAYA (synthetic)."),
+        };
+      }
+      function jd() {
+        return { title: "JD", body: [
+          "SIGN-IN STATUS",
+          "  AGENT     " + AGENT_DEFAULT,
+          "  OFFICE    " + OFFICE_ID_DEFAULT,
+          "  TERMINAL  CRYPTIC", "  DUTY-CODE SU", "  LANGUAGE  EN",
+        ].join("\n") + commentLine("JD — Show current sign-in / duty-code / office context.") };
+      }
+      function jm() {
+        return { title: "JM", body: [
+          "OFFICE DEFAULTS  " + OFFICE_ID_DEFAULT,
+          "  CURRENCY   SGD", "  COUNTRY    SG", "  LANGUAGE   EN",
+          "  TIME ZONE  GMT+08", "  PRINTERS   SINSQ-PRT-01 / SINSQ-PRT-02",
+        ].join("\n") + commentLine("JM — Show office-level defaults.") };
+      }
+      function qt() { return { title: "QT", body: "QUEUE LIST  -  OFFICE " + OFFICE_ID_DEFAULT + "\n  Q0  0   Q1  4   Q7  2   Q8  31   Q23 9 (INVOL)" +
+        commentLine("QT — Display queue counts (PNRs awaiting action by queue number).") }; }
+      function qc() { return { title: "QC", body: "QC  TOTAL ACROSS OFFICE: 46 PNRs IN QUEUE." +
+        commentLine("QC — Quick queue-count summary.") }; }
+      function qe(args) { return { title: "QE " + args, body: "OK  PNR " + currentPnr + " QUEUED TO Q" + (args.replace(/[^0-9]/g,"") || "8") +
+        commentLine("QE — Place PNR onto a queue for follow-up.") }; }
+      function dd(args) {
+        return { title: "DD " + args, body: "DD " + args + "  =  Tuesday 20 October 2026" +
+          commentLine("DD<DDMMM> — Calculate the weekday of a date.") };
+      }
+      function di(args) {
+        const m = args.match(/^DI\/([A-Z]{3})$/i) || args.match(/^DI\s+([A-Z]{3})$/i);
+        const code = m ? m[1].toUpperCase() : "MEL";
+        return { title: "DI " + args, body: "DI/" + code + "  LOCAL TIME  " + new Date().toLocaleTimeString("en-GB") +
+          commentLine("DI/<city> — Local time at airport.") };
+      }
+      function dc(args) {
+        return { title: "DC " + args, body: "DC USD SGD  =  1 USD = 1.29 SGD  (rate 20OCT26 BSP)" +
+          commentLine("DC <CCY1><CCY2> — Currency conversion at IATA BSP rate.") };
+      }
+      function gg(args) {
+        return { title: "GG " + args, body: [
+          "GG  AMADEUS INFORMATION SYSTEM",
+          "  GGAIRSQ     Carrier info: Singapore Airlines (SQ, 618)",
+          "  GGAIRVA     Carrier info: Virgin Australia (VA) — interline partner",
+          "  GGPCASIN    Phone code / addresses: SIN",
+          "  GGTAXSG     SG taxes & fees",
+        ].join("\n") + commentLine("GG — Amadeus Information System (read-only knowledge base).") };
+      }
+      function tjq() {
+        return { title: "TJQ", body: "TJQ  OFFICE " + OFFICE_ID_DEFAULT + "  TODAY:  TKT 18 / EMD 6 / REISSUE 9   TOTAL SGD 42,880" +
+          commentLine("TJQ — Sales report (daily total of tickets / EMDs / reissues).") };
+      }
+      function tjf() {
+        return { title: "TJF", body: "TJF  FORM OF PAYMENT REPORT  CASH SGD 1,200 / VI SGD 33,480 / AX SGD 8,200" +
+          commentLine("TJF — Form-of-payment breakdown for the office.") };
+      }
+      function rrn() {
+        if (!pnrLoaded) return needsPnr("RRN");
+        return { title: "RRN", body: "OK  PNR " + currentPnr + " COPIED TO NEW WORK AREA AS M4T8QB." +
+          commentLine("RRN — Copy current PNR to a new record locator.") };
+      }
+      function doInfo(args) {
+        return { title: "DO " + args, body: "DO  SQ237/20OCT  SIN 2355 → MEL 0955+1   A350-900   ON-TIME PERFORMANCE 89%" +
+          commentLine("DO — Operational flight info: timings, equipment, on-time performance.") };
+      }
+      function dlInfo(args) {
+        return { title: "DL " + args, body: "DL  SQ237/20OCT  LOAD  J 38/40   W 20/24   Y 247/253    PAX 305 / 317" +
+          commentLine("DL — Flight loading list (booked vs capacity).") };
+      }
+      function heHelp(args) {
+        return { title: "HE " + args, body: [
+          "*** HE — HELP PAGES ***  ENTRY: " + args.toUpperCase(),
+          "  RT       Retrieve PNR by record locator",
+          "  RTTN     Retrieve ticket / FA lines",
+          "  RTG      Retrieve services / SSRs",
+          "  AN       Availability search",
+          "  SS       Sell from availability",
+          "  SB       Rebook to another RBD",
+          "  XE       Cancel segment (after reissue only)",
+          "  FXQ      Fare quote / reissue pricing",
+          "  FXO/K    Best pricer, keep cabin",
+          "  FXP      Price & store TST",
+          "  TTP      Issue/reissue ticket",
+          "  ER       End & redisplay",
+          "  RF ...   Receive-from agent / source",
+          "  IR / IG  Refresh / ignore",
+        ].join("\n") + commentLine("HE — Amadeus on-line help. Append a command name (e.g. HE RT).") };
+      }
+
+      // =====================================================================
+      // Dispatcher
+      // =====================================================================
+      function dispatchCommand(raw) {
+        const cmd = raw.trim();
+        if (!cmd) return { title: "ready", body: "" };
+        const upper = cmd.toUpperCase();
+
+        if (upper === "RT")                                  return rt(null);
+        if (/^RT\s+\S+/i.test(upper))                        return rt(upper.replace(/^RT\s+/, ""));
+        if (upper === "RTTN")                                return rttn();
+        if (upper === "RTG" || upper === "RTSVC")            return rtg();
+        if (upper === "RHA" || upper === "RTHIS")            return rha();
+        if (upper === "IR")                                  return ir();
+        if (upper === "IG")                                  return ig();
+
+        if (upper === "TWD")                                 return twd("");
+        if (/^TWD\/L?\d+$/.test(upper))                      return twd(upper.replace("TWD",""));
+        if (upper === "TWD/FFY")                             return twd("/FFY");
+
+        if (/^AN\d{2}[A-Z]{3}[A-Z]{3}[A-Z]{3}/i.test(upper)) return an(upper);
+        if (/^TN\d{2}[A-Z]{3}[A-Z]{3}[A-Z]{3}$/i.test(upper))return tn(upper);
+
+        if (/^SS\d/i.test(upper))                            return ss(upper.replace(/^SS/, ""));
+        if (/^SB[A-Z]\d?/i.test(upper))                      return sb(upper.replace(/^SB/, ""));
+        if (/^XE\d/i.test(upper))                            return xe(upper.replace(/^XE/, ""));
+
+        if (upper.startsWith("SM"))                          return sm(upper.replace("SM",""));
+        if (/^ST\//i.test(upper))                            return st(upper.replace(/^ST/, ""));
+        if (upper.startsWith("SR "))                         return sr(upper.replace(/^SR\s+/, ""));
+
+        if (upper.startsWith("FXQ"))                         return fxq(upper);
+        if (upper.startsWith("FXO"))                         return fxo(upper);
+        if (upper === "FXP")                                 return fxp();
+        if (upper === "FXX")                                 return fxx();
+
+        if (upper.startsWith("TTP"))                         return ttp(upper);
+        if (upper === "TTI")                                 return tti();
+
+        if (upper === "ER")                                  return er();
+        if (upper === "RF KRIS;ER" || upper === "RF KRIS; ER" || upper === "RFKRIS;ER")
+                                                             return rfKrisEr();
+
+        if (/^FF/i.test(upper))                              return ff(upper.replace(/^FF\s?/, ""));
+
+        if (upper === "JD")                                  return jd();
+        if (upper === "JM")                                  return jm();
+        if (upper === "QT")                                  return qt();
+        if (upper === "QC")                                  return qc();
+        if (upper.startsWith("QE"))                          return qe(upper);
+
+        if (upper.startsWith("DD"))                          return dd(upper.replace(/^DD/, ""));
+        if (upper.startsWith("DI"))                          return di(upper);
+        if (upper.startsWith("DC"))                          return dc(upper);
+
+        if (upper.startsWith("GG"))                          return gg(upper.replace(/^GG/, ""));
+        if (upper === "TJQ")                                 return tjq();
+        if (upper === "TJF")                                 return tjf();
+        if (upper === "RRN")                                 return rrn();
+        if (upper.startsWith("DO "))                         return doInfo(upper.replace(/^DO\s+/, ""));
+        if (upper.startsWith("DL "))                         return dlInfo(upper.replace(/^DL\s+/, ""));
+        if (upper.startsWith("HE"))                          return heHelp(upper.replace(/^HE\s*/, ""));
+        if (upper === "?" )                                  return heHelp("");
+
+        return {
+          title: "unknown",
+          body: "WARNING  UNKNOWN COMMAND: " + upper + "\nTYPE HE <CMD> FOR HELP (e.g. HE RT)" +
+            commentLine("Command was not recognised by the cryptic interpreter."),
+        };
+      }
+
+      // =====================================================================
+      // I/O plumbing
+      // =====================================================================
+      let typingAnimationActive = false;
+      const HUMAN_TYPING_DELAY_MS = 120;
+      const HUMAN_TYPING_JITTER_MS = 60;
+      const HUMAN_TYPING_PUNCT_PAUSE_MS = 80;
+      function wait(ms) { return new Promise((r) => window.setTimeout(r, ms)); }
+      async function animateTypedCommand(command) {
+        typingAnimationActive = true;
+        terminalInput.value = "";
+        terminalInput.focus();
+        for (const ch of command) {
+          terminalInput.value += ch;
+          let delay = HUMAN_TYPING_DELAY_MS + Math.random() * HUMAN_TYPING_JITTER_MS;
+          if (/[\s\/,;.\-]/.test(ch)) delay += HUMAN_TYPING_PUNCT_PAUSE_MS;
+          await wait(delay);
+        }
+        typingAnimationActive = false;
+      }
+      async function runCommand(command, displayInput = command) {
+        if (!authenticated) return;
+        const { title, body } = dispatchCommand(command);
+        const echoed = displayInput ? `> ${displayInput}\n\n${body}` : body;
+        renderScreen(displayInput || title, echoed);
+        syncRightPanel();
+      }
+      async function submitTerminalInput(rawInput) {
+        const trimmed = rawInput.trim();
+        if (!trimmed || typingAnimationActive) return;
+        let mapped = trimmed;
+        if (/^\d$/.test(trimmed) && NUM_SHORTCUTS.has(trimmed)) {
+          mapped = NUM_SHORTCUTS.get(trimmed);
+        } else if (/^[a-z]$/.test(trimmed) && LETTER_SHORTCUTS.has(trimmed)) {
+          mapped = LETTER_SHORTCUTS.get(trimmed);
+        }
+        await animateTypedCommand(mapped);
+        await runCommand(mapped, mapped);
+        terminalInput.value = "";
+        terminalInput.focus();
+      }
+      terminalForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        await submitTerminalInput(terminalInput.value);
+      });
+      terminalInput.addEventListener("keydown", async (event) => {
+        if (event.key.length !== 1 || terminalInput.value !== "" || typingAnimationActive) return;
+        if (/\d/.test(event.key) && NUM_SHORTCUTS.has(event.key)) {
+          event.preventDefault();
+          await submitTerminalInput(event.key);
+        } else if (/^[a-z]$/.test(event.key) && LETTER_SHORTCUTS.has(event.key)) {
+          event.preventDefault();
+          await submitTerminalInput(event.key);
+        }
+      });
+
+      retrieveBtn.addEventListener("click", async () => {
+        const ref = retrieveInput.value.trim() || currentPnr;
+        await submitTerminalInput("RT " + ref);
+      });
+      retrieveInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { e.preventDefault(); retrieveBtn.click(); }
+      });
+      endTransactionBtn.addEventListener("click", () => {
+        submitTerminalInput("RF KRIS;ER");
+      });
+
+      // Reset Demo — return to the cancelled-flight starting state so the demo can be replayed.
+      function resetDemo() {
+        pnrLoaded = false;
+        pnrSaved = true;
+        resetState();
+        syncRightPanel();
+        renderScreen("demo reset", [
+          "★ DEMO RESET — WORK AREA CLEARED",
+          "",
+          "PNR " + PNR_REF + " back to its pre-reissue state:",
+          "  · SQ 231  Y 20OCT SIN-SYD  HX3  ** CANCELLED **",
+          "  · SQ 221  Y 21OCT SIN-SYD  HK3  (auto re-protection)",
+          "",
+          "Press 1 (or click the Reissue-Flow toolbar) to restart the playbook.",
+        ].join("\n"));
+        terminalInput.focus();
+      }
+      document.getElementById("resetDemoBtn").addEventListener("click", resetDemo);
+
+      // =====================================================================
+      // Auth + boot
+      // =====================================================================
+      function newSessionId() {
+        return "SQ-" + Math.random().toString(36).slice(2, 8).toUpperCase();
+      }
+      function setAuthUi(isAuthed, info) {
+        authenticated = isAuthed;
+        terminalInput.disabled = !isAuthed;
+        authStatus.textContent = isAuthed
+          ? `Signed in as ${info?.username || AGENT_DEFAULT}`
+          : "Authentication Required";
+        officeIdLabel.textContent = "OFFICE " + (info?.officeId || OFFICE_ID_DEFAULT);
+        if (isAuthed) {
+          loginView.classList.add("hidden");
+          workspace.classList.remove("hidden");
+        }
+      }
+      loginForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        crypticSessionId = newSessionId();
+        terminalSessionLabel.textContent = `Session ${crypticSessionId}`;
+        terminalDateLabel.textContent = nowStamp();
+        const info = {
+          username: document.getElementById("loginUsername").value.trim() || AGENT_DEFAULT,
+          officeId: document.getElementById("loginOfficeId").value.trim() || OFFICE_ID_DEFAULT,
+        };
+        setAuthUi(true, info);
+        renderToolbar();
+        syncRightPanel();
+        renderScreen(
+          "ready",
+          [
+            "SESSION READY",
+            `OFC/${info.officeId}  AGENT ${info.username}  ${nowStamp()}`,
+          ].join("\n")
+        );
+        terminalInput.focus();
+      });
+      loginClear.addEventListener("click", () => {
+        document.getElementById("loginUsername").value = "";
+        document.getElementById("loginOfficeId").value = "";
+      });
+    </script>
+  </body>
+</html>
