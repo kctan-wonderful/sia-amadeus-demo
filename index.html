@@ -1832,5 +1832,38 @@
         document.getElementById("loginOfficeId").value = "";
       });
     </script>
-  </body>
+  <script>
+/* Demo-day dates: the mock was written for 20 Oct 2026 (tonight) and 21 Oct (tomorrow). Rewrite those
+   dates, as they appear, to the Singapore calendar date the page is opened on and the day after. */
+(function () {
+  var M = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+  var LONG = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  var sg = new Date(Date.now() + 8 * 3600 * 1000);
+  var d0 = new Date(Date.UTC(sg.getUTCFullYear(), sg.getUTCMonth(), sg.getUTCDate()));
+  var d1 = new Date(d0.getTime() + 86400000);
+  var dd = function (d) { return String(d.getUTCDate()).padStart(2, "0"); };
+  var map = [
+    [/20 October 2026/g, d0.getUTCDate() + " " + LONG[d0.getUTCMonth()] + " " + d0.getUTCFullYear()],
+    [/20OCT26/g, dd(d0) + M[d0.getUTCMonth()] + String(d0.getUTCFullYear()).slice(2)],
+    [/20OCT/g, dd(d0) + M[d0.getUTCMonth()]],
+    [/21OCT/g, dd(d1) + M[d1.getUTCMonth()]]
+  ];
+  var fix = function (t) { for (var i = 0; i < map.length; i++) t = t.replace(map[i][0], map[i][1]); return t; };
+  var walk = function (n) {
+    if (n.nodeType === 3) { var v = fix(n.nodeValue); if (v !== n.nodeValue) n.nodeValue = v; return; }
+    if (n.nodeType === 1 && n.tagName !== "SCRIPT" && n.tagName !== "STYLE") for (var c = n.firstChild; c; c = c.nextSibling) walk(c);
+  };
+  var start = function () {
+    walk(document.body);
+    new MutationObserver(function (ms) {
+      ms.forEach(function (m) {
+        if (m.type === "characterData") walk(m.target);
+        m.addedNodes && m.addedNodes.forEach(walk);
+      });
+    }).observe(document.body, { childList: true, subtree: true, characterData: true });
+  };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
+})();
+</script>
+</body>
 </html>
